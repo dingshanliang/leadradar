@@ -39,6 +39,23 @@ class MockLLMProvider(LLMProvider):
         )
 
 
+class ExtractionResponse:
+    """Wrapper that carries the ExtractionResult plus optional metadata."""
+
+    def __init__(
+        self,
+        result: ExtractionResult,
+        *,
+        input_tokens: int | None = None,
+        output_tokens: int | None = None,
+        latency_ms: int | None = None,
+    ):
+        self.result = result
+        self.input_tokens = input_tokens
+        self.output_tokens = output_tokens
+        self.latency_ms = latency_ms
+
+
 class OpenAICompatibleLLMProvider(LLMProvider):
     def __init__(self, *, api_key: str, base_url: str | None, model: str) -> None:
         self.api_key = api_key
@@ -46,10 +63,60 @@ class OpenAICompatibleLLMProvider(LLMProvider):
         self.model = model
 
     async def extract(self, *, text: str, url: str | None = None, title: str | None = None) -> ExtractionResult:
-        raise NotImplementedError(
-            "Implement with an OpenAI-compatible chat/completions or responses API. "
-            "Tests must use MockLLMProvider and never call external APIs."
+        import json
+        import time
+
+        import httpx
+
+        base = (self.base_url or "https://api.openai.com/v1").rstrip("/")
+        endpoint = f"{base}/chat/completions"
+
+        system_prompt = (
+            "你是一个 B2B 销售情报抽取助手。从政府采购/公共资源公告中抽取结构化信息。"
+            "规则：1) 只抽取原文明确提及的信息，绝不编造。"
+            "2) 如果缺少预算金额，budget_amount.value 设为 null。"
+            "3) 所有结论必须有 evidence 字段佐证，引用原文。"
+            "4) 如果文档与食品/农产品/包装/品牌/溯源无关，设 is_relevant=false。"
+            "返回严格的 JSON 格式。"
         )
+        user_content = f"标题：{title or '未知'}\n来源URL：{url or '未知'}\n\n正文：\n{text[:4000]}"
+
+        payload = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_content},
+            ],
+            "response_format": {"type": "json_object"},
+            "temperature": 0.1,
+        }
+
+        start = time.monotonic()
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            resp = await client.post(
+                endpoint,
+                json=payload,
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json",
+                },
+            )
+            resp.raise_for_status()
+        elapsed_ms = int((time.monotonic() - start) * 1000)
+
+        data = resp.json()
+        content = data["choices"][0]["message"]["content"]
+        parsed = json.loads(content)
+        result = ExtractionResult.model_validate(parsed)
+
+        usage = data.get("usage", {})
+        result.__extraction_meta = ExtractionResponse(
+            result,
+            input_tokens=usage.get("prompt_tokens"),
+            output_tokens=usage.get("completion_tokens"),
+            latency_ms=elapsed_ms,
+        )
+        return result
 
 
 _CONFIDENCE_FLOOR = 0.3

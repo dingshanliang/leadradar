@@ -98,6 +98,9 @@ class ExtractionRun(SQLModel, table=True):
     parsed_json: Optional[str] = None
     confidence: float = 0.0
     status: ExtractionRunStatus = ExtractionRunStatus.PENDING
+    input_tokens: Optional[int] = None
+    output_tokens: Optional[int] = None
+    latency_ms: Optional[int] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 

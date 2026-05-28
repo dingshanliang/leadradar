@@ -41,6 +41,8 @@ async def document_to_signal(
     )
     result = validate_extraction(result)
 
+    meta = getattr(result, "__extraction_meta", None)
+
     extraction_run = ExtractionRun(
         raw_document_id=document.id,
         llm_provider=llm.__class__.__name__,
@@ -49,6 +51,9 @@ async def document_to_signal(
         parsed_json=result.model_dump_json(),
         confidence=result.confidence,
         status=ExtractionRunStatus.COMPLETED,
+        input_tokens=meta.input_tokens if meta else None,
+        output_tokens=meta.output_tokens if meta else None,
+        latency_ms=meta.latency_ms if meta else None,
     )
     session.add(extraction_run)
 
