@@ -1,4 +1,23 @@
 services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://leadradar:leadradar@postgres:5432/leadradar
+      CORS_ORIGINS: http://localhost:3000
+    depends_on:
+      - postgres
+
+  web:
+    build: ./web
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      - api
+
   postgres:
     image: postgres:16
     environment:
