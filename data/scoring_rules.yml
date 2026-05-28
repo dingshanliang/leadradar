@@ -1,0 +1,56 @@
+version: 0.1
+max_scores:
+  budget_strength: 35
+  scenario_fit: 25
+  timing: 20
+  reachability: 10
+  leverage: 10
+
+grades:
+  S: 85
+  A: 70
+  B: 55
+  C: 40
+  D: 0
+
+budget_strength:
+  procurement_intent: 35
+  tender_notice: 35
+  winning_notice: 25
+  contract_notice: 20
+  subsidy_notice: 20
+  recruiting_signal: 10
+  certification_registry: 8
+  news_report: 5
+  company_website: 5
+
+scenario_fit:
+  region_brand_or_association: 10
+  prepackaged_food: 8
+  agri_product_brand: 8
+  multi_sku: 6
+  gift_box_or_packaged_product: 6
+  certification_or_gi: 5
+  poor_existing_qr: 8
+
+# timing rules can be calculated from dates; these constants are fallbacks.
+timing:
+  procurement_expected_within_3_months: 20
+  newly_published_tender: 18
+  newly_published_intent: 16
+  newly_won_project: 12
+  recent_exhibition_or_launch: 10
+  job_post_within_30_days: 8
+
+reachability:
+  procurement_contact: 10
+  agency_phone: 8
+  official_phone: 6
+  public_business_email: 4
+  platform_customer_service: 2
+
+leverage:
+  multi_org_region_brand_project: 10
+  winning_service_provider: 8
+  packaging_or_printing_partner: 8
+  leading_enterprise_replicable: 6

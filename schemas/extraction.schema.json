@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LeadRadarExtractionResult",
+  "type": "object",
+  "required": [
+    "is_relevant",
+    "signal_type",
+    "confidence",
+    "evidence"
+  ],
+  "properties": {
+    "is_relevant": {
+      "type": "boolean"
+    },
+    "signal_type": {
+      "type": "string",
+      "enum": [
+        "procurement_intent",
+        "tender_notice",
+        "winning_notice",
+        "contract_notice",
+        "certification_registry",
+        "recruiting_signal",
+        "exhibition_signal",
+        "product_launch",
+        "packaging_upgrade",
+        "channel_partner",
+        "company_website",
+        "news_report",
+        "irrelevant"
+      ]
+    },
+    "customer_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "organization_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "project_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "budget_amount": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "currency": {
+          "type": "string",
+          "default": "CNY"
+        },
+        "raw": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "expected_time": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "region": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "province": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "city": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "county": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "need_summary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "matched_keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "product_fit": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "数字标签合规启动包",
+          "溯源信任包",
+          "包装扫码增长包",
+          "区域品牌数字化管理包",
+          "渠道白标工具包"
+        ]
+      }
+    },
+    "budget_source_guess": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "field",
+          "text"
+        ],
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "uncertainties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

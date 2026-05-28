@@ -1,0 +1,4 @@
+customer_name,customer_type,signal_type,signal_title,budget_amount,province,recommended_package,score,grade,source_url
+某县农业农村局,区域品牌/政府机构,procurement_intent,某县农产品区域公用品牌建设项目采购意向,1800000,江西省,区域品牌数字化管理包,92,S,https://example.gov.cn/notice/1
+某茶叶有限公司,食品/农产品品牌方,certification_registry,名特优新农产品认证 + 电商活跃,,福建省,溯源信任包,76,A,https://example.com/company/tea
+某食品包装设计有限公司,渠道伙伴,channel_partner,食品包装设计案例丰富,,广东省,渠道白标工具包,82,A,https://example.com/packaging

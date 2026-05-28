@@ -1,0 +1,46 @@
+keyword_groups:
+  region_brand:
+    description: 区域品牌/农产品品牌项目
+    keywords:
+      - 区域公用品牌
+      - 农产品区域品牌
+      - 农产品品牌建设
+      - 农产品品牌推广
+      - 地理标志
+      - 名特优新农产品
+      - 农业品牌
+  traceability:
+    description: 追溯/一物一码/二维码
+    keywords:
+      - 农产品质量安全追溯
+      - 食品安全追溯
+      - 一物一码
+      - 一批一码
+      - 一品一码
+      - 二维码追溯
+      - 溯源平台
+  digital_label:
+    description: 食品数字标签/标签合规
+    keywords:
+      - 预包装食品数字标签
+      - 食品标签合规
+      - 数字标签
+      - 标签信息
+      - 变更留痕
+  ecommerce_agri:
+    description: 农产品上行/电商进农村
+    keywords:
+      - 电商进农村
+      - 农产品上行
+      - 乡村特产馆
+      - 直播助农
+      - 农产品电商
+  packaging:
+    description: 包装设计/标签印刷/防伪
+    keywords:
+      - 农产品包装设计
+      - 食品包装设计
+      - 标签印刷
+      - 防伪标签
+      - 二维码标签
+      - 包装升级

@@ -1,0 +1,36 @@
+sources:
+  - id: ccgp
+    name: 中国政府采购网
+    source_type: government_procurement
+    base_url: https://www.ccgp.gov.cn/
+    priority: P0
+    crawl_mode: search_or_html
+    enabled: true
+    rate_limit_per_minute: 20
+
+  - id: ggzy
+    name: 全国公共资源交易平台
+    source_type: public_resource_trading
+    base_url: https://www.ggzy.gov.cn/
+    priority: P0
+    crawl_mode: search_or_html
+    enabled: true
+    rate_limit_per_minute: 20
+
+  - id: greenfood
+    name: 中国绿色食品发展中心信息查询
+    source_type: certification_registry
+    base_url: https://www.greenfood.agri.cn/xxcx/
+    priority: P1
+    crawl_mode: registry_or_manual
+    enabled: false
+    rate_limit_per_minute: 10
+
+  - id: aqsc_mtyx
+    name: 全国名特优新农产品名录
+    source_type: certification_registry
+    base_url: https://www.aqsc.agri.cn/mtyx/cpml/
+    priority: P1
+    crawl_mode: registry_or_manual
+    enabled: false
+    rate_limit_per_minute: 10

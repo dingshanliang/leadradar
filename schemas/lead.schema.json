@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Lead",
+  "type": "object",
+  "required": [
+    "customer_name",
+    "customer_type",
+    "signal_type",
+    "score",
+    "grade",
+    "recommended_package"
+  ],
+  "properties": {
+    "customer_name": {
+      "type": "string"
+    },
+    "customer_type": {
+      "type": "string"
+    },
+    "signal_type": {
+      "type": "string"
+    },
+    "budget_amount": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "province": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "recommended_package": {
+      "type": "string"
+    },
+    "score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "grade": {
+      "type": "string",
+      "enum": [
+        "S",
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "source_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "evidence_text": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}
