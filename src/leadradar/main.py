@@ -3,6 +3,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from leadradar.api.auth_routes import router as auth_router
 from leadradar.api.routes import router
 from leadradar.config import get_settings
 from leadradar.db import get_session
@@ -20,6 +21,7 @@ app.add_middleware(
 )
 
 app.include_router(router)
+app.include_router(auth_router)
 
 
 @app.get("/health")

@@ -6,6 +6,16 @@ from uuid import UUID
 from pydantic import BaseModel
 
 
+# ── User ──────────────────────────────────────────────────────────
+
+
+class UserOut(BaseModel):
+    id: str
+    email: str
+    role: str
+    display_name: str | None = None
+
+
 # ── Source ────────────────────────────────────────────────────────
 
 
@@ -202,3 +212,16 @@ class ConfigOut(BaseModel):
     keyword_groups: list[KeywordGroup]
     scoring_dimensions: list[ScoringDimension]
     product_packages: list[ProductPackage]
+
+
+# ── Weekly Report ────────────────────────────────────────────────
+
+
+class WeeklyReport(BaseModel):
+    new_leads: int
+    followed_up: int
+    contacted: int
+    scheduled: int
+    won: int
+    lost: int
+    conversion_rate: str

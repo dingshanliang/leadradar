@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import io
+from datetime import datetime
 from pathlib import Path
 from typing import Literal
 from uuid import UUID
@@ -32,6 +33,7 @@ from leadradar.api.schemas import (
     SourceOut,
     StatsOut,
     StatusUpdate,
+    WeeklyReport,
 )
 from leadradar.db import get_session
 from leadradar.models import (
@@ -100,6 +102,41 @@ def get_stats(session: Session = Depends(get_session)):
         province_distribution=_distribution(
             lambda _, org, __: org.province or "未知"
         )[:8],
+    )
+
+
+@router.get("/weekly-report", response_model=WeeklyReport)
+def get_weekly_report(session: Session = Depends(get_session)):
+    from datetime import timedelta, timezone
+
+    one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+
+    leads = session.exec(
+        select(Lead).where(Lead.created_at >= one_week_ago)
+    ).all()
+
+    follow_ups = session.exec(
+        select(FollowUp).where(FollowUp.created_at >= one_week_ago)
+    ).all()
+
+    new_leads = len(leads)
+    followed_up = len(follow_ups)
+    contacted = sum(1 for l in leads if l.lead_status.value in ("called", "connected"))
+    scheduled = sum(1 for l in leads if l.lead_status.value == "diagnosis_scheduled")
+    won = sum(1 for l in leads if l.lead_status.value == "won")
+    lost = sum(1 for l in leads if l.lead_status.value == "lost")
+
+    total_outcomes = won + lost
+    conversion_rate = f"{(won / total_outcomes * 100):.0f}%" if total_outcomes > 0 else "N/A"
+
+    return WeeklyReport(
+        new_leads=new_leads,
+        followed_up=followed_up,
+        contacted=contacted,
+        scheduled=scheduled,
+        won=won,
+        lost=lost,
+        conversion_rate=conversion_rate,
     )
 
 
@@ -453,6 +490,43 @@ def list_follow_ups(lead_id: UUID, session: Session = Depends(get_session)):
         .order_by(FollowUp.created_at.desc())
     ).all()
     return follow_ups
+
+
+# ── Due follow-ups ───────────────────────────────────────────────
+
+
+class DueFollowUp(BaseModel):
+    follow_up_id: UUID
+    lead_id: UUID
+    organization_name: str | None = None
+    next_action_at: datetime
+    result: str
+
+
+@router.get("/follow-ups/due", response_model=list[DueFollowUp])
+def list_due_follow_ups(session: Session = Depends(get_session)):
+    from datetime import datetime, timezone
+
+    now = datetime.now(timezone.utc)
+    rows = session.exec(
+        select(FollowUp, Lead, Organization)
+        .join(Lead, Lead.id == FollowUp.lead_id)
+        .join(Organization, Organization.id == Lead.organization_id)
+        .where(FollowUp.next_action_at is not None, FollowUp.next_action_at <= now)
+        .order_by(FollowUp.next_action_at.asc())
+        .limit(50)
+    ).all()
+
+    return [
+        DueFollowUp(
+            follow_up_id=fu.id,
+            lead_id=fu.lead_id,
+            organization_name=org.name,
+            next_action_at=fu.next_action_at,
+            result=fu.result,
+        )
+        for fu, _, org in rows
+    ]
 
 
 # ── Crawl ─────────────────────────────────────────────────────────
