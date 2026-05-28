@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+:root {
+  --color-primary: #0F172A;
+  --color-secondary: #334155;
+  --color-cta: #0369A1;
+  --color-cta-hover: #0284C7;
+  --color-bg: #F8FAFC;
+  --color-foreground: #020617;
+  --color-border: #E2E8F0;
+  --color-muted: #64748B;
+  --color-success: #059669;
+  --color-warning: #D97706;
+  --color-danger: #DC2626;
+
+  --grade-s: #059669;
+  --grade-a: #0369A1;
+  --grade-b: #D97706;
+  --grade-c: #EA580C;
+  --grade-d: #6B7280;
+}
+
+@theme inline {
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-cta: var(--color-cta);
+  --color-cta-hover: var(--color-cta-hover);
+  --color-bg: var(--color-bg);
+  --color-foreground: var(--color-foreground);
+  --color-border: var(--color-border);
+  --color-muted: var(--color-muted);
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-danger: var(--color-danger);
+
+  --font-heading: var(--font-poppins);
+  --font-body: var(--font-open-sans);
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-foreground);
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading), system-ui, sans-serif;
+}
