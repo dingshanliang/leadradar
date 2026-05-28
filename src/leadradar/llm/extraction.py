@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -51,10 +52,48 @@ class OpenAICompatibleLLMProvider(LLMProvider):
         )
 
 
+_CONFIDENCE_FLOOR = 0.3
+_CONFIDENCE_PENALTY = 0.15
+_PHONE_PATTERN = re.compile(r"1[3-9]\d{9}")
+_PERSONAL_PHONE_KEYWORDS = ("手机", "个人电话", "联系电话")
+
+
 def validate_extraction(result: ExtractionResult) -> ExtractionResult:
-    """Central place for additional business validation beyond Pydantic."""
+    """Validate extraction result: evidence checks, anti-fabrication, field completeness."""
+    if not result.is_relevant:
+        return result
+
     evidence_fields = {e.field for e in result.evidence}
+    all_evidence_text = " ".join(e.text for e in result.evidence)
+
+    # ── Evidence checks ──────────────────────────────────────────
     if result.budget_amount and result.budget_amount.value and "budget_amount" not in evidence_fields:
         result.confidence = min(result.confidence, 0.6)
         result.uncertainties.append("budget_amount lacks evidence")
+
+    if result.organization_name and "organization_name" not in evidence_fields:
+        result.uncertainties.append("organization_name lacks evidence")
+
+    # ── Anti-fabrication: personal phone numbers ─────────────────
+    for evidence in result.evidence:
+        if _PHONE_PATTERN.search(evidence.text):
+            result.uncertainties.append(f"evidence contains suspected personal phone number")
+            result.confidence -= _CONFIDENCE_PENALTY
+            break
+
+    # Check need_summary for embedded personal info
+    summary = result.need_summary or ""
+    if _PHONE_PATTERN.search(summary):
+        result.uncertainties.append("need_summary contains suspected personal phone")
+
+    # ── Field completeness ───────────────────────────────────────
+    if not result.budget_amount or result.budget_amount.value is None:
+        result.uncertainties.append("missing budget amount")
+
+    if not result.expected_time:
+        result.uncertainties.append("missing expected_time")
+
+    # ── Confidence floor ─────────────────────────────────────────
+    result.confidence = max(result.confidence, _CONFIDENCE_FLOOR)
+
     return result
