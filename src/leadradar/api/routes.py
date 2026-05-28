@@ -539,13 +539,26 @@ class CrawlRequest(BaseModel):
 
 @router.post("/crawl/trigger")
 async def trigger_crawl(body: CrawlRequest, session: Session = Depends(get_session)):
-    from leadradar.crawlers.ccgp import CCGPFetchProvider, CCGPSearchProvider
+    from leadradar.crawlers.ggzy import CaptchaRequiredError
+    from leadradar.crawlers.registry import get_providers
     from leadradar.services.crawler_service import CrawlerService
 
-    search = CCGPSearchProvider()
-    fetch = CCGPFetchProvider()
+    try:
+        search, fetch = get_providers(body.source)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
     service = CrawlerService(session=session, search=search, fetch=fetch)
-    task = await service.crawl(body.query)
+    try:
+        task = await service.crawl(body.query)
+    except CaptchaRequiredError as e:
+        return {
+            "task_id": None,
+            "status": "captcha_required",
+            "message": "GGZY requires CAPTCHA verification",
+            "captcha_token": e.captcha_token,
+        }
+
     return {
         "task_id": str(task.id),
         "status": task.status.value,
@@ -555,19 +568,25 @@ async def trigger_crawl(body: CrawlRequest, session: Session = Depends(get_sessi
 
 class PipelineRequest(BaseModel):
     query: str
+    source: str = "ccgp"
 
 
 @router.post("/pipeline/run")
 async def run_pipeline(body: PipelineRequest, session: Session = Depends(get_session)):
-    from leadradar.crawlers.ccgp import CCGPFetchProvider, CCGPSearchProvider
+    from leadradar.crawlers.registry import get_providers
     from leadradar.llm.extraction import MockLLMProvider
-    from leadradar.services.pipeline import run_pipeline
+    from leadradar.services.pipeline import run_pipeline as _run_pipeline
 
-    result = await run_pipeline(
+    try:
+        search, fetch = get_providers(body.source)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    result = await _run_pipeline(
         query=body.query,
         session=session,
-        search=CCGPSearchProvider(),
-        fetch=CCGPFetchProvider(),
+        search=search,
+        fetch=fetch,
         llm=MockLLMProvider(),
     )
     return {
