@@ -1,4 +1,4 @@
-.PHONY: setup dev test lint format
+.PHONY: setup dev test lint format web-setup web-dev web-build
 
 setup:
 	python -m pip install -U pip
@@ -18,3 +18,12 @@ lint:
 format:
 	ruff format src tests
 	ruff check --fix src tests
+
+web-setup:
+	cd web && npm install
+
+web-dev:
+	cd web && npm run dev
+
+web-build:
+	cd web && npm run build

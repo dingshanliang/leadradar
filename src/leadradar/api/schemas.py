@@ -82,6 +82,8 @@ class LeadListItem(BaseModel):
     customer_type: str | None = None
     recommended_package: str | None = None
     budget_bucket: str | None = None
+    signal_type: str | None = None
+    province: str | None = None
     lead_status: str
     total_score: int
     grade: str

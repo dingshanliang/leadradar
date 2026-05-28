@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     allow_personal_phone_collection: bool = False
     allow_automated_outbound_calls: bool = False
 
+    cors_origins: str = "http://localhost:3000"
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 

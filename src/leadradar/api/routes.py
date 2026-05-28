@@ -64,26 +64,30 @@ def list_documents(session: Session = Depends(get_session)):
 def list_leads(
     grade: str | None = None,
     status: str | None = None,
+    signal_type: str | None = None,
     limit: int = Query(default=50, le=200),
     offset: int = Query(default=0, ge=0),
     session: Session = Depends(get_session),
 ):
     query = (
-        select(Lead, LeadScore, Organization)
+        select(Lead, LeadScore, Organization, Signal)
         .join(LeadScore, LeadScore.lead_id == Lead.id)
         .join(Organization, Organization.id == Lead.organization_id)
+        .outerjoin(Signal, Signal.id == Lead.primary_signal_id)
         .order_by(Lead.created_at.desc())
     )
     if grade:
         query = query.where(LeadScore.grade == grade.upper())
     if status:
         query = query.where(Lead.lead_status == status)
+    if signal_type:
+        query = query.where(Signal.signal_type == signal_type)
 
     query = query.offset(offset).limit(limit)
     rows = session.exec(query).all()
 
     results = []
-    for lead, score, org in rows:
+    for lead, score, org, signal in rows:
         results.append(
             LeadListItem(
                 id=lead.id,
@@ -91,6 +95,8 @@ def list_leads(
                 customer_type=lead.customer_type,
                 recommended_package=lead.recommended_package,
                 budget_bucket=lead.budget_bucket,
+                signal_type=signal.signal_type if signal else None,
+                province=org.province,
                 lead_status=lead.lead_status.value if isinstance(lead.lead_status, LeadStatus) else lead.lead_status,
                 total_score=score.total_score,
                 grade=score.grade,
@@ -113,7 +119,7 @@ def export_leads(
         select(Lead, LeadScore, Organization, Signal)
         .join(LeadScore, LeadScore.lead_id == Lead.id)
         .join(Organization, Organization.id == Lead.organization_id)
-        .join(Signal, Signal.id == Lead.primary_signal_id)
+        .outerjoin(Signal, Signal.id == Lead.primary_signal_id)
     )
     if grade:
         query = query.where(LeadScore.grade == grade.upper())
@@ -144,10 +150,10 @@ def export_leads(
             "customer_type": lead.customer_type or "",
             "recommended_package": lead.recommended_package or "",
             "budget_bucket": lead.budget_bucket or "",
-            "signal_type": signal.signal_type,
-            "budget_amount": signal.budget_amount or "",
-            "source_url": signal.source_url or "",
-            "evidence_text": signal.evidence_text or "",
+            "signal_type": signal.signal_type if signal else "",
+            "budget_amount": signal.budget_amount if signal else "",
+            "source_url": signal.source_url if signal else "",
+            "evidence_text": signal.evidence_text if signal else "",
         })
 
     if format == "csv":
