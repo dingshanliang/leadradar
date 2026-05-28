@@ -8,6 +8,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import Response
+from pydantic import BaseModel
 from openpyxl import Workbook
 from sqlmodel import Session, select
 
@@ -452,6 +453,55 @@ def list_follow_ups(lead_id: UUID, session: Session = Depends(get_session)):
         .order_by(FollowUp.created_at.desc())
     ).all()
     return follow_ups
+
+
+# ── Crawl ─────────────────────────────────────────────────────────
+
+
+class CrawlRequest(BaseModel):
+    query: str
+    source: str = "ccgp"
+
+
+@router.post("/crawl/trigger")
+async def trigger_crawl(body: CrawlRequest, session: Session = Depends(get_session)):
+    from leadradar.crawlers.ccgp import CCGPFetchProvider, CCGPSearchProvider
+    from leadradar.services.crawler_service import CrawlerService
+
+    search = CCGPSearchProvider()
+    fetch = CCGPFetchProvider()
+    service = CrawlerService(session=session, search=search, fetch=fetch)
+    task = await service.crawl(body.query)
+    return {
+        "task_id": str(task.id),
+        "status": task.status.value,
+        "message": task.error_message or "completed",
+    }
+
+
+class PipelineRequest(BaseModel):
+    query: str
+
+
+@router.post("/pipeline/run")
+async def run_pipeline(body: PipelineRequest, session: Session = Depends(get_session)):
+    from leadradar.crawlers.ccgp import CCGPFetchProvider, CCGPSearchProvider
+    from leadradar.llm.extraction import MockLLMProvider
+    from leadradar.services.pipeline import run_pipeline
+
+    result = await run_pipeline(
+        query=body.query,
+        session=session,
+        search=CCGPSearchProvider(),
+        fetch=CCGPFetchProvider(),
+        llm=MockLLMProvider(),
+    )
+    return {
+        "documents": len(result.documents),
+        "leads": len(result.leads),
+        "skipped_irrelevant": result.skipped_irrelevant,
+        "errors": result.errors,
+    }
 
 
 # ── Response helpers ──────────────────────────────────────────────
