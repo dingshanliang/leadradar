@@ -126,3 +126,56 @@ export interface LeadFilters {
   limit?: number;
   offset?: number;
 }
+
+export interface DistributionItem {
+  name: string;
+  count: number;
+}
+
+export interface Stats {
+  total: number;
+  sa_count: number;
+  pending: number;
+  scheduled: number;
+  invalid: number;
+  invalid_rate: string;
+  signal_type_distribution: DistributionItem[];
+  package_distribution: DistributionItem[];
+  province_distribution: DistributionItem[];
+}
+
+export interface EnumItem {
+  key: string;
+  label: string;
+}
+
+export interface Meta {
+  signal_types: EnumItem[];
+  statuses: EnumItem[];
+  grades: string[];
+  budget_buckets: string[];
+}
+
+export interface KeywordGroup {
+  name: string;
+  description: string;
+  keywords: string[];
+}
+
+export interface ScoringDimension {
+  name: string;
+  max_score: number;
+  description: string;
+}
+
+export interface ProductPackage {
+  name: string;
+  target: string;
+  desc: string;
+}
+
+export interface AppConfig {
+  keyword_groups: KeywordGroup[];
+  scoring_dimensions: ScoringDimension[];
+  product_packages: ProductPackage[];
+}

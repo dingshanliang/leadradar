@@ -140,3 +140,65 @@ class FollowUpOut(BaseModel):
     notes: str | None = None
     next_action_at: datetime | None = None
     created_at: datetime
+
+
+# ── Stats ─────────────────────────────────────────────────────────
+
+
+class DistributionItem(BaseModel):
+    name: str
+    count: int
+
+
+class StatsOut(BaseModel):
+    total: int
+    sa_count: int
+    pending: int
+    scheduled: int
+    invalid: int
+    invalid_rate: str
+    signal_type_distribution: list[DistributionItem]
+    package_distribution: list[DistributionItem]
+    province_distribution: list[DistributionItem]
+
+
+# ── Meta ─────────────────────────────────────────────────────────
+
+
+class EnumItem(BaseModel):
+    key: str
+    label: str
+
+
+class MetaOut(BaseModel):
+    signal_types: list[EnumItem]
+    statuses: list[EnumItem]
+    grades: list[str]
+    budget_buckets: list[str]
+
+
+# ── Config ───────────────────────────────────────────────────────
+
+
+class KeywordGroup(BaseModel):
+    name: str
+    description: str
+    keywords: list[str]
+
+
+class ScoringDimension(BaseModel):
+    name: str
+    max_score: int
+    description: str
+
+
+class ProductPackage(BaseModel):
+    name: str
+    target: str
+    desc: str
+
+
+class ConfigOut(BaseModel):
+    keyword_groups: list[KeywordGroup]
+    scoring_dimensions: list[ScoringDimension]
+    product_packages: list[ProductPackage]

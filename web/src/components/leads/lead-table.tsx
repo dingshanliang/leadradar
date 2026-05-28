@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { GradeBadge } from "./grade-badge";
 import { StatusDropdown } from "./status-dropdown";
-import { SIGNAL_TYPE_LABELS } from "@/lib/constants";
+import { useMeta } from "@/hooks/use-meta";
 import { formatDate } from "@/lib/utils";
 import { updateLeadStatus } from "@/lib/api-client";
 import type { LeadListItem, LeadStatus } from "@/lib/types";
@@ -14,6 +14,7 @@ interface LeadTableProps {
 }
 
 export function LeadTable({ leads, onStatusChange }: LeadTableProps) {
+  const { signalTypeLabels } = useMeta();
   const handleStatusChange = async (leadId: string, status: LeadStatus) => {
     await updateLeadStatus(leadId, status);
     onStatusChange?.();
@@ -58,7 +59,7 @@ export function LeadTable({ leads, onStatusChange }: LeadTableProps) {
                 </Link>
               </td>
               <td className="py-3.5 pr-4 text-muted text-xs">
-                {lead.signal_type ? (SIGNAL_TYPE_LABELS[lead.signal_type] ?? lead.signal_type) : "-"}
+                {lead.signal_type ? (signalTypeLabels[lead.signal_type] ?? lead.signal_type) : "-"}
               </td>
               <td className="py-3.5 pr-4 text-xs">
                 {lead.budget_bucket ?? "-"}

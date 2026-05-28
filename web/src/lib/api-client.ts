@@ -1,11 +1,14 @@
 import type {
+  AppConfig,
   Document,
   FollowUpCreate,
   FollowUpOut,
   LeadDetail,
   LeadFilters,
   LeadListItem,
+  Meta,
   Source,
+  Stats,
 } from "./types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -31,6 +34,10 @@ export async function checkHealth(): Promise<{ status: string }> {
 
 // ── Sources ────────────────────────────────────────────────────
 
+export async function getConfig(): Promise<AppConfig> {
+  return apiFetch("/api/v1/config");
+}
+
 export async function listSources(): Promise<Source[]> {
   return apiFetch("/api/v1/sources");
 }
@@ -42,6 +49,14 @@ export async function listDocuments(): Promise<Document[]> {
 }
 
 // ── Leads ──────────────────────────────────────────────────────
+
+export async function getStats(): Promise<Stats> {
+  return apiFetch("/api/v1/stats");
+}
+
+export async function getMeta(): Promise<Meta> {
+  return apiFetch("/api/v1/meta");
+}
 
 export async function listLeads(filters?: LeadFilters): Promise<LeadListItem[]> {
   const params = new URLSearchParams();

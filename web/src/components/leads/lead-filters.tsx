@@ -1,11 +1,11 @@
 "use client";
 
-import { GRADE_COLORS, STATUS_LABELS, SIGNAL_TYPE_LABELS } from "@/lib/constants";
+import { GRADE_COLORS, STATUS_LABELS as FALLBACK_STATUS, SIGNAL_TYPE_LABELS as FALLBACK_SIGNAL } from "@/lib/constants";
+import { useMeta } from "@/hooks/use-meta";
 import type { Grade, LeadFilters, LeadStatus } from "@/lib/types";
 
 const GRADES: Grade[] = ["S", "A", "B", "C", "D"];
 const STATUSES: LeadStatus[] = ["new", "qualified", "called", "connected", "diagnosis_scheduled", "proposal_sent", "won", "lost", "invalid", "blocked"];
-const SIGNAL_TYPES = Object.entries(SIGNAL_TYPE_LABELS);
 
 interface LeadFiltersBarProps {
   filters: LeadFilters;
@@ -13,6 +13,9 @@ interface LeadFiltersBarProps {
 }
 
 export function LeadFiltersBar({ filters, onChange }: LeadFiltersBarProps) {
+  const { signalTypeLabels, statusLabels } = useMeta();
+  const signalTypes = Object.entries(signalTypeLabels);
+
   const update = (patch: Partial<LeadFilters>) => {
     onChange({ ...filters, ...patch, offset: 0 });
   };
@@ -51,7 +54,7 @@ export function LeadFiltersBar({ filters, onChange }: LeadFiltersBarProps) {
         >
           <option value="">全部</option>
           {STATUSES.map((s) => (
-            <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+            <option key={s} value={s}>{statusLabels[s] ?? FALLBACK_STATUS[s] ?? s}</option>
           ))}
         </select>
       </div>
@@ -67,7 +70,7 @@ export function LeadFiltersBar({ filters, onChange }: LeadFiltersBarProps) {
           className="text-xs border border-border rounded-lg px-2 py-1 bg-white text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-cta"
         >
           <option value="">全部</option>
-          {SIGNAL_TYPES.map(([k, v]) => (
+          {signalTypes.map(([k, v]) => (
             <option key={k} value={k}>{v}</option>
           ))}
         </select>

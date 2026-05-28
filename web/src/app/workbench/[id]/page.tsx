@@ -9,7 +9,9 @@ import { Button } from "@/components/ui/button";
 import { CopyButton } from "@/components/ui/copy-button";
 import { GradeBadge } from "@/components/leads/grade-badge";
 import { StatusBadge } from "@/components/leads/status-badge";
-import { CALL_RESULTS, SIGNAL_TYPE_LABELS, STATUS_LABELS } from "@/lib/constants";
+import { CALL_RESULTS, SIGNAL_TYPE_LABELS as FALLBACK_SIGNAL } from "@/lib/constants";
+import { useMeta } from "@/hooks/use-meta";
+import { FollowUpHistory } from "@/components/lead-detail/follow-up-history";
 import { formatBudget, formatDate } from "@/lib/utils";
 import type { FollowUpOut, LeadDetail } from "@/lib/types";
 
@@ -27,6 +29,7 @@ export default function WorkbenchPage() {
     () => listFollowUps(leadId)
   );
 
+  const { signalTypeLabels } = useMeta();
   const [channel, setChannel] = useState("phone");
   const [result, setResult] = useState("");
   const [notes, setNotes] = useState("");
@@ -93,7 +96,7 @@ export default function WorkbenchPage() {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted">信号类型</span>
-              <span className="font-medium">{SIGNAL_TYPE_LABELS[signal.signal_type] ?? signal.signal_type}</span>
+              <span className="font-medium">{signalTypeLabels[signal.signal_type] ?? signal.signal_type}</span>
             </div>
             {signal.budget_amount != null && (
               <div className="flex justify-between">
@@ -239,17 +242,7 @@ export default function WorkbenchPage() {
         {followUps && followUps.length > 0 && (
           <div className="mt-6 pt-4 border-t border-border">
             <p className="text-xs text-muted mb-3">历史跟进</p>
-            <div className="space-y-2">
-              {followUps.map((fu) => (
-                <div key={fu.id} className="p-2 bg-gray-50 rounded-lg text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-foreground">{fu.result}</span>
-                    <span className="text-muted">{formatDate(fu.created_at)}</span>
-                  </div>
-                  {fu.notes && <p className="text-muted mt-0.5">{fu.notes}</p>}
-                </div>
-              ))}
-            </div>
+            <FollowUpHistory followUps={followUps} compact />
           </div>
         )}
       </div>

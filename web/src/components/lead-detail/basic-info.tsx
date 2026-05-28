@@ -1,6 +1,5 @@
 import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/leads/status-badge";
-import { SIGNAL_TYPE_LABELS } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
 import type { OrganizationBrief, LeadDetail } from "@/lib/types";
 

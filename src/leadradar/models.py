@@ -20,6 +20,37 @@ class LeadStatus(str, Enum):
     INVALID = "invalid"
     BLOCKED = "blocked"
 
+    @property
+    def label(self) -> str:
+        return {
+            "new": "新建",
+            "qualified": "已验证",
+            "called": "已拨打",
+            "connected": "已接通",
+            "diagnosis_scheduled": "已预约诊断",
+            "proposal_sent": "已发送方案",
+            "won": "已成交",
+            "lost": "已流失",
+            "invalid": "无效",
+            "blocked": "已屏蔽",
+        }[self.value]
+
+
+SIGNAL_TYPE_LABELS: dict[str, str] = {
+    "procurement_intent": "采购意向",
+    "tender_notice": "招标公告",
+    "winning_notice": "中标公告",
+    "contract_notice": "合同公告",
+    "certification_registry": "认证登记",
+    "recruiting_signal": "招聘信号",
+    "exhibition_signal": "展会信号",
+    "product_launch": "产品发布",
+    "packaging_upgrade": "包装升级",
+    "channel_partner": "渠道合作",
+    "company_website": "企业官网",
+    "news_report": "新闻报道",
+}
+
 
 class Source(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import io
+from pathlib import Path
 from typing import Literal
 from uuid import UUID
 
@@ -12,19 +13,28 @@ from sqlmodel import Session, select
 
 from leadradar.api.schemas import (
     CallScript,
+    ConfigOut,
+    DistributionItem,
     DocumentOut,
+    EnumItem,
     FollowUpCreate,
     FollowUpOut,
+    KeywordGroup,
     LeadDetail,
     LeadListItem,
+    MetaOut,
     OrganizationBrief,
+    ProductPackage,
     ScoreBrief,
+    ScoringDimension,
     SignalBrief,
     SourceOut,
+    StatsOut,
     StatusUpdate,
 )
 from leadradar.db import get_session
 from leadradar.models import (
+    SIGNAL_TYPE_LABELS,
     FollowUp,
     Lead,
     LeadScore,
@@ -39,7 +49,145 @@ from leadradar.services.call_script import generate_call_script as _gen_script
 router = APIRouter(prefix="/api/v1")
 
 
+# ── Stats ─────────────────────────────────────────────────────────
+
+
+@router.get("/stats", response_model=StatsOut)
+def get_stats(session: Session = Depends(get_session)):
+    rows = session.exec(
+        select(Lead, LeadScore, Organization, Signal)
+        .join(LeadScore, LeadScore.lead_id == Lead.id)
+        .join(Organization, Organization.id == Lead.organization_id)
+        .outerjoin(Signal, Signal.id == Lead.primary_signal_id)
+    ).all()
+
+    total = len(rows)
+    sa_count = sum(1 for _, score, _, _ in rows if score.grade in ("S", "A"))
+    pending = sum(
+        1 for lead, _, _, _ in rows
+        if lead.lead_status.value in ("new", "qualified")
+    )
+    scheduled = sum(
+        1 for lead, _, _, _ in rows if lead.lead_status.value == "diagnosis_scheduled"
+    )
+    invalid = sum(1 for lead, _, _, _ in rows if lead.lead_status.value == "invalid")
+    invalid_rate = f"{(invalid / total * 100):.1f}" if total > 0 else "0"
+
+    def _distribution(key_fn):
+        counts: dict[str, int] = {}
+        for lead, _, org, signal in rows:
+            k = key_fn(lead, org, signal)
+            counts[k] = counts.get(k, 0) + 1
+        return [
+            DistributionItem(name=k, count=v)
+            for k, v in sorted(counts.items(), key=lambda x: -x[1])
+        ]
+
+    return StatsOut(
+        total=total,
+        sa_count=sa_count,
+        pending=pending,
+        scheduled=scheduled,
+        invalid=invalid,
+        invalid_rate=invalid_rate,
+        signal_type_distribution=_distribution(
+            lambda _, __, signal: signal.signal_type if signal else "unknown"
+        )[:8],
+        package_distribution=_distribution(
+            lambda lead, _, __: lead.recommended_package or "未分类"
+        ),
+        province_distribution=_distribution(
+            lambda _, org, __: org.province or "未知"
+        )[:8],
+    )
+
+
 # ── Sources ───────────────────────────────────────────────────────
+
+
+@router.get("/meta", response_model=MetaOut)
+def get_meta():
+    return MetaOut(
+        signal_types=[
+            EnumItem(key=k, label=v) for k, v in SIGNAL_TYPE_LABELS.items()
+        ],
+        statuses=[
+            EnumItem(key=s.value, label=s.label) for s in LeadStatus
+        ],
+        grades=["S", "A", "B", "C", "D"],
+        budget_buckets=["<10万", "10-50万", "50-100万", "100-500万", ">500万"],
+    )
+
+
+@router.get("/config", response_model=ConfigOut)
+def get_config():
+    import yaml
+
+    data_dir = Path(__file__).resolve().parent.parent.parent.parent / "data"
+
+    with open(data_dir / "keywords.yml", encoding="utf-8") as f:
+        kw_raw = yaml.safe_load(f)
+
+    keyword_groups = [
+        KeywordGroup(name=k, description=v["description"], keywords=v["keywords"])
+        for k, v in kw_raw.get("keyword_groups", {}).items()
+    ]
+
+    with open(data_dir / "scoring_rules.yml", encoding="utf-8") as f:
+        score_raw = yaml.safe_load(f)
+
+    max_scores = score_raw.get("max_scores", {})
+    dim_descriptions = {
+        "budget_strength": "预算金额大小和确定性",
+        "scenario_fit": "与公司产品服务的匹配度",
+        "timing": "采购时间紧迫性",
+        "reachability": "联系方式可获得性",
+        "leverage": "影响成交的有利因素",
+    }
+    dim_names = {
+        "budget_strength": "预算强度",
+        "scenario_fit": "场景匹配",
+        "timing": "时间窗口",
+        "reachability": "可触达性",
+        "leverage": "成交杠杆",
+    }
+    scoring_dimensions = [
+        ScoringDimension(
+            name=dim_names.get(k, k),
+            max_score=v,
+            description=dim_descriptions.get(k, ""),
+        )
+        for k, v in max_scores.items()
+    ]
+
+    product_packages = [
+        ProductPackage(
+            name="区域品牌数字化管理包",
+            target="区域品牌政府",
+            desc="品牌数字化管理平台 + 溯源系统 + 包装设计",
+        ),
+        ProductPackage(
+            name="食品企业合规包",
+            target="食品企业",
+            desc="标签合规 + 检测报告管理 + 溯源系统",
+        ),
+        ProductPackage(
+            name="包装升级方案包",
+            target="包装需求企业",
+            desc="包装设计 + 印刷管理 + 供应链优化",
+        ),
+        ProductPackage(
+            name="展会数字化展示包",
+            target="参展企业",
+            desc="电子画册 + 二维码展示 + 客户管理",
+        ),
+    ]
+
+    return ConfigOut(
+        keyword_groups=keyword_groups,
+        scoring_dimensions=scoring_dimensions,
+        product_packages=product_packages,
+    )
 
 
 @router.get("/sources", response_model=list[SourceOut])

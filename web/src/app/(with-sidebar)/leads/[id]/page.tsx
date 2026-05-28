@@ -12,7 +12,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getLeadDetail } from "@/lib/api-client";
-import { SIGNAL_TYPE_LABELS } from "@/lib/constants";
+import { useMeta } from "@/hooks/use-meta";
 import { formatBudget } from "@/lib/utils";
 import type { LeadDetail } from "@/lib/types";
 
@@ -21,6 +21,7 @@ export default function LeadDetailPage() {
   const router = useRouter();
   const leadId = params.id as string;
 
+  const { signalTypeLabels } = useMeta();
   const { data: lead, isLoading, error } = useSWR<LeadDetail>(
     `lead-${leadId}`,
     () => getLeadDetail(leadId)
@@ -84,7 +85,7 @@ export default function LeadDetailPage() {
             <div>
               <p className="text-xs text-muted">信号类型</p>
               <p className="text-sm font-medium mt-0.5">
-                {SIGNAL_TYPE_LABELS[signal.signal_type] ?? signal.signal_type}
+                {signalTypeLabels[signal.signal_type] ?? signal.signal_type}
               </p>
             </div>
             {signal.title && (
