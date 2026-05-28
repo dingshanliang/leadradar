@@ -33,6 +33,43 @@ class Source(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
+class CrawlTaskStatus(str, Enum):
+    PENDING = "pending"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
+class CrawlTask(SQLModel, table=True):
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    source_id: Optional[UUID] = Field(default=None, foreign_key="source.id")
+    query: Optional[str] = None
+    status: CrawlTaskStatus = CrawlTaskStatus.PENDING
+    started_at: Optional[datetime] = None
+    finished_at: Optional[datetime] = None
+    error_message: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class ExtractionRunStatus(str, Enum):
+    PENDING = "pending"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
+class ExtractionRun(SQLModel, table=True):
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    raw_document_id: UUID = Field(foreign_key="rawdocument.id")
+    llm_provider: str
+    model: str
+    prompt_version: str = "0.1"
+    raw_response: Optional[str] = None
+    parsed_json: Optional[str] = None
+    confidence: float = 0.0
+    status: ExtractionRunStatus = ExtractionRunStatus.PENDING
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
 class RawDocument(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     source_id: Optional[UUID] = Field(default=None, foreign_key="source.id")
