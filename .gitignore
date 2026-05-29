@@ -38,6 +38,13 @@ playwright-report/
 # Output
 outputs/
 
+# Claude Code session data
+.claude/
+.playwright-mcp/
+findings.md
+progress.md
+task_plan.md
+
 # Next.js
 web/node_modules/
 web/.next/
