@@ -18,13 +18,13 @@ sources:
     rate_limit_per_minute: 20
 
   - id: greenfood
-    name: 中国绿色食品发展中心信息查询
+    name: 中国绿色食品发展中心公告
     source_type: certification_registry
-    base_url: https://www.greenfood.agri.cn/xxcx/
-    priority: P1
-    crawl_mode: registry_or_manual
-    enabled: false
-    rate_limit_per_minute: 10
+    base_url: http://www.greenfood.agri.cn/cpgg/lsspgg/
+    priority: P2
+    crawl_mode: search_or_html
+    enabled: true
+    rate_limit_per_minute: 20
 
   - id: spc
     name: 食品安全抽检公布结果查询系统
