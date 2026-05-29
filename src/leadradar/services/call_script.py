@@ -74,15 +74,19 @@ def _build_questions(customer_type: str | None, package: str | None) -> list[str
     ]
 
     if customer_type in ("region_brand_government", "region_brand_association"):
-        base.extend([
-            "区域品牌下面有多少家授权企业？目前用什么方式管理授权和追溯？",
-            "如果做数字化入口，一般走品牌预算、合规预算还是项目预算？",
-        ])
+        base.extend(
+            [
+                "区域品牌下面有多少家授权企业？目前用什么方式管理授权和追溯？",
+                "如果做数字化入口，一般走品牌预算、合规预算还是项目预算？",
+            ]
+        )
     elif customer_type == "food_enterprise":
-        base.extend([
-            "目前产品的标签审核和营养成分标注是手动操作还是已有系统支持？",
-            "出口和内销产品对标签的要求差异，你们怎么管理？",
-        ])
+        base.extend(
+            [
+                "目前产品的标签审核和营养成分标注是手动操作还是已有系统支持？",
+                "出口和内销产品对标签的要求差异，你们怎么管理？",
+            ]
+        )
     else:
         base.append("如果做数字化入口，一般走品牌预算、合规预算还是项目预算？")
 

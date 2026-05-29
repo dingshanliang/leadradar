@@ -128,10 +128,7 @@ class ProvincialSearchProvider(SearchProvider):
         timeout: float = 20.0,
     ):
         if province not in PROVINCES:
-            raise ValueError(
-                f"Unknown province '{province}'. "
-                f"Available: {list(PROVINCES.keys())}"
-            )
+            raise ValueError(f"Unknown province '{province}'. Available: {list(PROVINCES.keys())}")
         self._config = PROVINCES[province]
         self._delay = delay_seconds
         self._timeout = timeout

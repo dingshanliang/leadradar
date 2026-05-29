@@ -17,7 +17,6 @@ from leadradar.auth import (
     verify_password,
 )
 from leadradar.db import get_session
-from leadradar.models import LeadStatus
 
 router = APIRouter(prefix="/api/v1/auth")
 

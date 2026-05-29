@@ -11,7 +11,6 @@ from sqlmodel import Session, SQLModel, create_engine, select
 from fastapi.testclient import TestClient
 
 from leadradar.models import (
-    FollowUp,
     Lead,
     LeadScore,
     LeadStatus,
@@ -20,7 +19,7 @@ from leadradar.models import (
     Signal,
     Source,
 )
-from leadradar.main import app, get_session
+from leadradar.main import app
 
 
 @pytest.fixture
@@ -52,12 +51,6 @@ def client(engine):
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()
-
-
-@pytest.fixture
-def session(engine):
-    with Session(engine) as s:
-        yield s
 
 
 def _seed_source(session, **kwargs) -> Source:
@@ -411,9 +404,7 @@ class TestExport:
 
     def test_export_csv_filter_by_grade(self, client, session):
         _full_seed(session)
-        resp = client.get(
-            "/api/v1/leads/export", params={"format": "csv", "grade": "A"}
-        )
+        resp = client.get("/api/v1/leads/export", params={"format": "csv", "grade": "A"})
         reader = csv.DictReader(io.StringIO(resp.text))
         rows = list(reader)
         assert len(rows) == 0

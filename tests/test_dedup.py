@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
 
 from leadradar.crawlers.base import SearchResult
 from leadradar.services.dedup import (
@@ -66,14 +65,10 @@ class TestIsSimilarToAny:
         assert _is_similar_to_any("采购公告", ["采购公告"], 0.7) is True
 
     def test_similar_titles(self):
-        assert _is_similar_to_any(
-            "食品包装采购公告", ["食品包装采购公示"], 0.7
-        ) is True
+        assert _is_similar_to_any("食品包装采购公告", ["食品包装采购公示"], 0.7) is True
 
     def test_different_titles(self):
-        assert _is_similar_to_any(
-            "食品包装采购公告", ["办公设备招标公告"], 0.7
-        ) is False
+        assert _is_similar_to_any("食品包装采购公告", ["办公设备招标公告"], 0.7) is False
 
     def test_empty_candidates(self):
         assert _is_similar_to_any("采购公告", [], 0.7) is False

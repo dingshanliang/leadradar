@@ -116,7 +116,9 @@ def signal_to_scored_lead(
         primary_signal_id=signal.id,
         customer_type=extraction_result.customer_type if extraction_result else None,
         recommended_package=(
-            extraction_result.product_fit[0] if extraction_result and extraction_result.product_fit else None
+            extraction_result.product_fit[0]
+            if extraction_result and extraction_result.product_fit
+            else None
         ),
         budget_bucket=_budget_bucket(signal.budget_amount),
         lead_status=LeadStatus.NEW,
@@ -149,9 +151,7 @@ def signal_to_scored_lead(
 
 def _get_extraction_run_for_signal(signal: Signal, session: Session) -> ExtractionRun | None:
     """Find the ExtractionRun that produced this Signal."""
-    statement = select(ExtractionRun).where(
-        ExtractionRun.raw_document_id == signal.raw_document_id
-    )
+    statement = select(ExtractionRun).where(ExtractionRun.raw_document_id == signal.raw_document_id)
     return session.exec(statement).first()
 
 
@@ -199,9 +199,7 @@ def _find_or_create_organization(
         province=region.province if region else None,
         city=region.city if region else None,
         county=region.county if region else None,
-        organization_type=(
-            extraction_result.customer_type if extraction_result else None
-        ),
+        organization_type=(extraction_result.customer_type if extraction_result else None),
     )
     session.add(org)
     session.commit()

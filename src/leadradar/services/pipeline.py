@@ -9,7 +9,7 @@ from sqlmodel import Session, select
 from leadradar.crawlers.base import FetchProvider, SearchProvider
 from leadradar.crawlers.parser import HtmlDocumentParser
 from leadradar.llm.extraction import LLMProvider
-from leadradar.models import CrawlTask, CrawlTaskStatus, Lead, LeadScore, RawDocument
+from leadradar.models import CrawlTaskStatus, Lead, LeadScore, RawDocument
 from leadradar.services.crawler_service import CrawlerService
 from leadradar.services.lead_service import document_to_signal, signal_to_scored_lead
 
@@ -62,7 +62,9 @@ async def run_pipeline(
     for doc in docs:
         try:
             extraction_run, signal = await document_to_signal(
-                document=doc, llm=llm, session=session,
+                document=doc,
+                llm=llm,
+                session=session,
             )
 
             if signal is None:
@@ -71,7 +73,8 @@ async def run_pipeline(
                 continue
 
             org, lead, lead_score = signal_to_scored_lead(
-                signal=signal, session=session,
+                signal=signal,
+                session=session,
             )
             result.documents.append(doc)
             result.leads.append(lead)

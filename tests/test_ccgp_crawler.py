@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
 
 from leadradar.crawlers.ccgp import _parse_search_results
 

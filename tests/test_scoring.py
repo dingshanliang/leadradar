@@ -11,11 +11,16 @@ def rules():
 
 # ── S grade (85+) ──────────────────────────────────────────────
 
+
 def test_s_grade_procurement_intent(rules):
     result = score_lead(
         LeadScoringInput(
             signal_type="procurement_intent",
-            scenario_flags=["region_brand_or_association", "agri_product_brand", "gift_box_or_packaged_product"],
+            scenario_flags=[
+                "region_brand_or_association",
+                "agri_product_brand",
+                "gift_box_or_packaged_product",
+            ],
             timing_flags=["procurement_expected_within_3_months"],
             reachability_flags=["procurement_contact"],
             leverage_flags=["multi_org_region_brand_project"],
@@ -28,6 +33,7 @@ def test_s_grade_procurement_intent(rules):
 
 
 # ── A grade (70-84) ────────────────────────────────────────────
+
 
 def test_a_grade_tender_notice(rules):
     result = score_lead(
@@ -46,6 +52,7 @@ def test_a_grade_tender_notice(rules):
 
 # ── B grade (55-69) ────────────────────────────────────────────
 
+
 def test_b_grade_winning_notice(rules):
     result = score_lead(
         LeadScoringInput(
@@ -62,6 +69,7 @@ def test_b_grade_winning_notice(rules):
 
 
 # ── C grade (40-54) ────────────────────────────────────────────
+
 
 def test_d_grade_recruiting_low_signal(rules):
     result = score_lead(
@@ -95,6 +103,7 @@ def test_c_grade_recruiting_with_moderate_flags(rules):
 
 # ── D grade (<40) ──────────────────────────────────────────────
 
+
 def test_d_grade_irrelevant(rules):
     result = score_lead(LeadScoringInput(signal_type="irrelevant"), rules=rules)
     assert result.grade == "D"
@@ -117,6 +126,7 @@ def test_d_grade_news_weak_signal(rules):
 
 
 # ── Scenario fit cap at 25 ─────────────────────────────────────
+
 
 def test_scenario_fit_capped_at_25(rules):
     result = score_lead(
@@ -142,6 +152,7 @@ def test_scenario_fit_capped_at_25(rules):
 
 # ── Grade boundary: exact thresholds ───────────────────────────
 
+
 def test_grade_for_score_exact_boundaries(rules):
     assert grade_for_score(85, rules) == "S"
     assert grade_for_score(84, rules) == "A"
@@ -155,6 +166,7 @@ def test_grade_for_score_exact_boundaries(rules):
 
 
 # ── Empty flags ────────────────────────────────────────────────
+
 
 def test_empty_flags_with_known_signal_type(rules):
     result = score_lead(
@@ -173,6 +185,7 @@ def test_empty_flags_with_known_signal_type(rules):
 
 # ── Unknown signal type ────────────────────────────────────────
 
+
 def test_unknown_signal_type_gets_zero_budget(rules):
     result = score_lead(
         LeadScoringInput(signal_type="unknown_future_type"),
@@ -183,6 +196,7 @@ def test_unknown_signal_type_gets_zero_budget(rules):
 
 
 # ── Reasons are populated ──────────────────────────────────────
+
 
 def test_reasons_populated_for_scoring_lead(rules):
     result = score_lead(
@@ -204,6 +218,7 @@ def test_no_reasons_for_zero_score(rules):
 
 
 # ── Breakdown keys always present ──────────────────────────────
+
 
 def test_breakdown_keys(rules):
     result = score_lead(LeadScoringInput(signal_type="news_report"), rules=rules)

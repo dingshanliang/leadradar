@@ -6,7 +6,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from leadradar.api.auth_routes import router as auth_router
 from leadradar.api.routes import router
 from leadradar.config import get_settings
-from leadradar.db import get_session
 from leadradar.services.lead_service import generate_call_opening, score_demo_lead
 
 settings = get_settings()

@@ -66,13 +66,8 @@ def get_stats(session: Session = Depends(get_session)):
 
     total = len(rows)
     sa_count = sum(1 for _, score, _, _ in rows if score.grade in ("S", "A"))
-    pending = sum(
-        1 for lead, _, _, _ in rows
-        if lead.lead_status.value in ("new", "qualified")
-    )
-    scheduled = sum(
-        1 for lead, _, _, _ in rows if lead.lead_status.value == "diagnosis_scheduled"
-    )
+    pending = sum(1 for lead, _, _, _ in rows if lead.lead_status.value in ("new", "qualified"))
+    scheduled = sum(1 for lead, _, _, _ in rows if lead.lead_status.value == "diagnosis_scheduled")
     invalid = sum(1 for lead, _, _, _ in rows if lead.lead_status.value == "invalid")
     invalid_rate = f"{(invalid / total * 100):.1f}" if total > 0 else "0"
 
@@ -99,9 +94,7 @@ def get_stats(session: Session = Depends(get_session)):
         package_distribution=_distribution(
             lambda lead, _, __: lead.recommended_package or "未分类"
         ),
-        province_distribution=_distribution(
-            lambda _, org, __: org.province or "未知"
-        )[:8],
+        province_distribution=_distribution(lambda _, org, __: org.province or "未知")[:8],
     )
 
 
@@ -111,20 +104,16 @@ def get_weekly_report(session: Session = Depends(get_session)):
 
     one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
 
-    leads = session.exec(
-        select(Lead).where(Lead.created_at >= one_week_ago)
-    ).all()
+    leads = session.exec(select(Lead).where(Lead.created_at >= one_week_ago)).all()
 
-    follow_ups = session.exec(
-        select(FollowUp).where(FollowUp.created_at >= one_week_ago)
-    ).all()
+    follow_ups = session.exec(select(FollowUp).where(FollowUp.created_at >= one_week_ago)).all()
 
     new_leads = len(leads)
     followed_up = len(follow_ups)
-    contacted = sum(1 for l in leads if l.lead_status.value in ("called", "connected"))
-    scheduled = sum(1 for l in leads if l.lead_status.value == "diagnosis_scheduled")
-    won = sum(1 for l in leads if l.lead_status.value == "won")
-    lost = sum(1 for l in leads if l.lead_status.value == "lost")
+    contacted = sum(1 for lead in leads if lead.lead_status.value in ("called", "connected"))
+    scheduled = sum(1 for lead in leads if lead.lead_status.value == "diagnosis_scheduled")
+    won = sum(1 for lead in leads if lead.lead_status.value == "won")
+    lost = sum(1 for lead in leads if lead.lead_status.value == "lost")
 
     total_outcomes = won + lost
     conversion_rate = f"{(won / total_outcomes * 100):.0f}%" if total_outcomes > 0 else "N/A"
@@ -146,12 +135,8 @@ def get_weekly_report(session: Session = Depends(get_session)):
 @router.get("/meta", response_model=MetaOut)
 def get_meta():
     return MetaOut(
-        signal_types=[
-            EnumItem(key=k, label=v) for k, v in SIGNAL_TYPE_LABELS.items()
-        ],
-        statuses=[
-            EnumItem(key=s.value, label=s.label) for s in LeadStatus
-        ],
+        signal_types=[EnumItem(key=k, label=v) for k, v in SIGNAL_TYPE_LABELS.items()],
+        statuses=[EnumItem(key=s.value, label=s.label) for s in LeadStatus],
         grades=["S", "A", "B", "C", "D"],
         budget_buckets=["<10万", "10-50万", "50-100万", "100-500万", ">500万"],
     )
@@ -283,7 +268,9 @@ def list_leads(
                 budget_bucket=lead.budget_bucket,
                 signal_type=signal.signal_type if signal else None,
                 province=org.province,
-                lead_status=lead.lead_status.value if isinstance(lead.lead_status, LeadStatus) else lead.lead_status,
+                lead_status=lead.lead_status.value
+                if isinstance(lead.lead_status, LeadStatus)
+                else lead.lead_status,
                 total_score=score.total_score,
                 grade=score.grade,
                 created_at=lead.created_at,
@@ -328,19 +315,23 @@ def export_leads(
 
     data_rows = []
     for lead, score, org, signal in rows:
-        data_rows.append({
-            "organization_name": org.name,
-            "lead_status": lead.lead_status.value if isinstance(lead.lead_status, LeadStatus) else lead.lead_status,
-            "grade": score.grade,
-            "total_score": score.total_score,
-            "customer_type": lead.customer_type or "",
-            "recommended_package": lead.recommended_package or "",
-            "budget_bucket": lead.budget_bucket or "",
-            "signal_type": signal.signal_type if signal else "",
-            "budget_amount": signal.budget_amount if signal else "",
-            "source_url": signal.source_url if signal else "",
-            "evidence_text": signal.evidence_text if signal else "",
-        })
+        data_rows.append(
+            {
+                "organization_name": org.name,
+                "lead_status": lead.lead_status.value
+                if isinstance(lead.lead_status, LeadStatus)
+                else lead.lead_status,
+                "grade": score.grade,
+                "total_score": score.total_score,
+                "customer_type": lead.customer_type or "",
+                "recommended_package": lead.recommended_package or "",
+                "budget_bucket": lead.budget_bucket or "",
+                "signal_type": signal.signal_type if signal else "",
+                "budget_amount": signal.budget_amount if signal else "",
+                "source_url": signal.source_url if signal else "",
+                "evidence_text": signal.evidence_text if signal else "",
+            }
+        )
 
     if format == "csv":
         buf = io.StringIO()
@@ -369,9 +360,7 @@ def get_lead_detail(lead_id: UUID, session: Session = Depends(get_session)):
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found")
 
-    score = session.exec(
-        select(LeadScore).where(LeadScore.lead_id == lead_id)
-    ).first()
+    score = session.exec(select(LeadScore).where(LeadScore.lead_id == lead_id)).first()
 
     org = session.get(Organization, lead.organization_id) if lead.organization_id else None
 
@@ -422,7 +411,9 @@ def get_lead_detail(lead_id: UUID, session: Session = Depends(get_session)):
         customer_type=lead.customer_type,
         recommended_package=lead.recommended_package,
         budget_bucket=lead.budget_bucket,
-        lead_status=lead.lead_status.value if isinstance(lead.lead_status, LeadStatus) else lead.lead_status,
+        lead_status=lead.lead_status.value
+        if isinstance(lead.lead_status, LeadStatus)
+        else lead.lead_status,
         owner=lead.owner,
         created_at=lead.created_at,
         updated_at=lead.updated_at,
@@ -485,9 +476,7 @@ def create_follow_up(
 @router.get("/leads/{lead_id}/follow-ups", response_model=list[FollowUpOut])
 def list_follow_ups(lead_id: UUID, session: Session = Depends(get_session)):
     follow_ups = session.exec(
-        select(FollowUp)
-        .where(FollowUp.lead_id == lead_id)
-        .order_by(FollowUp.created_at.desc())
+        select(FollowUp).where(FollowUp.lead_id == lead_id).order_by(FollowUp.created_at.desc())
     ).all()
     return follow_ups
 

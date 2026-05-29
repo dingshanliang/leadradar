@@ -128,10 +128,12 @@ def _record_to_search_result(rec: dict) -> SearchResult:
         parts.append("不合格")
     elif sfhg == "1":
         parts.append("合格")
-    parts.extend([
-        rec.get("bcscqymc", ""),
-        rec.get("bcydwmc", ""),
-    ])
+    parts.extend(
+        [
+            rec.get("bcscqymc", ""),
+            rec.get("bcydwmc", ""),
+        ]
+    )
     bhgxm = rec.get("bhgxm")
     if bhgxm:
         parts.append(f"不合格项目: {bhgxm}")

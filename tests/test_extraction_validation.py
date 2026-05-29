@@ -1,6 +1,5 @@
 """Tests for T-303: Extraction validation — JSON, evidence, anti-fabrication."""
 
-import pytest
 
 from leadradar.schemas import BudgetAmount, Evidence, ExtractionResult
 from leadradar.llm.extraction import validate_extraction

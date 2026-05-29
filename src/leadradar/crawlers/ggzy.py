@@ -126,7 +126,7 @@ class GGZYSearchProvider(SearchProvider):
                     captcha_image=captcha_data.get("captchaImage", ""),
                 )
             elif code == 800:
-                wait = self._retry_base_wait * (2 ** attempt)
+                wait = self._retry_base_wait * (2**attempt)
                 await asyncio.sleep(wait)
                 continue
             else:
@@ -136,9 +136,7 @@ class GGZYSearchProvider(SearchProvider):
                     response=resp,
                 )
 
-        raise RateLimitError(
-            f"GGZY rate limit persisted after {self._max_retries} retries"
-        )
+        raise RateLimitError(f"GGZY rate limit persisted after {self._max_retries} retries")
 
 
 class GGZYFetchProvider(FetchProvider):

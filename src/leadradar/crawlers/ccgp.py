@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import asyncio
 import re
-from urllib.parse import quote
 
 import httpx
 from bs4 import BeautifulSoup

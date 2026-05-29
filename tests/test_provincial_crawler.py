@@ -5,7 +5,6 @@ from __future__ import annotations
 import httpx
 import pytest
 
-from leadradar.crawlers.base import SearchResult
 from leadradar.crawlers.provincial import (
     PROVINCES,
     ProvincialFetchProvider,

@@ -18,7 +18,7 @@ import re
 from urllib.parse import urljoin
 
 import httpx
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup
 
 from leadradar.crawlers.base import FetchProvider, RawPage, SearchProvider, SearchResult
 

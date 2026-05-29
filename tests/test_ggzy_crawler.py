@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-import json
 
 import httpx
 import pytest
 
-from leadradar.crawlers.base import SearchResult
 from leadradar.crawlers.ggzy import (
     CaptchaRequiredError,
     GGZYFetchProvider,
@@ -92,10 +90,12 @@ class TestRecordToSearchResult:
         assert result.url == "https://www.ggzy.gov.cn/deal/detail.html?id=789"
 
     def test_preserves_absolute_url(self):
-        result = _record_to_search_result({
-            "title": "test",
-            "url": "https://www.ggzy.gov.cn/deal/detail.html?id=789",
-        })
+        result = _record_to_search_result(
+            {
+                "title": "test",
+                "url": "https://www.ggzy.gov.cn/deal/detail.html?id=789",
+            }
+        )
         assert result.url == "https://www.ggzy.gov.cn/deal/detail.html?id=789"
 
 
@@ -109,19 +109,13 @@ class TestGGZYSearchProvider:
         return GGZYSearchProvider(**defaults)
 
     def _mock_client(self, response_json, status_code=200):
-        transport = httpx.MockTransport(
-            lambda req: httpx.Response(status_code, json=response_json)
-        )
+        transport = httpx.MockTransport(lambda req: httpx.Response(status_code, json=response_json))
         return httpx.AsyncClient(transport=transport)
 
     @pytest.mark.asyncio
     async def test_search_returns_results(self):
         provider = self._make_provider()
-        client = self._mock_client(_GGZY_SEARCH_OK)
         provider.__dict__["_delay"] = 0  # skip sleep for test speed
-
-        # Monkey-patch to inject mock client
-        original_search = provider.search
 
         async def patched_search(query, *, limit=20):
             results = []
@@ -184,13 +178,8 @@ class TestGGZYSearchProvider:
 
     @pytest.mark.asyncio
     async def test_search_respects_limit(self):
-        provider = self._make_provider()
-
         async def patched_search(query, *, limit=20):
-            all_results = [
-                _record_to_search_result(r)
-                for r in _GGZY_SEARCH_OK["data"]["records"]
-            ]
+            all_results = [_record_to_search_result(r) for r in _GGZY_SEARCH_OK["data"]["records"]]
             # Simulate pagination — just return duplicates up to 10
             extended = all_results * 5
             return extended[:limit]

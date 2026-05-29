@@ -139,7 +139,6 @@ def _parse_search_page(html: str) -> tuple[list[SearchResult], int]:
         cert_unit = cells[4].get_text(strip=True)
         expiry = cells[5].get_text(strip=True)
         producers = cells[6].get_text(strip=True)
-        cert_no = cells[7].get_text(strip=True) if len(cells) > 7 else ""
 
         snippet_parts = [p for p in [province, county, cert_unit] if p]
         snippet = f"{' '.join(snippet_parts)} | 生产单位: {producers}" if snippet_parts else None

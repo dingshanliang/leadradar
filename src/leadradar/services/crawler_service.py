@@ -65,9 +65,7 @@ class CrawlerService:
                     url=result.url,
                     title=result.title,
                     published_at=(
-                        datetime.fromisoformat(result.published_at)
-                        if result.published_at
-                        else None
+                        datetime.fromisoformat(result.published_at) if result.published_at else None
                     ),
                     raw_html=page.text,
                     extracted_text=text,
@@ -93,9 +91,7 @@ class CrawlerService:
         return task
 
     def _is_duplicate(self, url: str) -> bool:
-        existing = self._session.exec(
-            select(RawDocument).where(RawDocument.url == url)
-        ).first()
+        existing = self._session.exec(select(RawDocument).where(RawDocument.url == url)).first()
         return existing is not None
 
     def _is_content_duplicate(self, hash_val: str) -> bool:

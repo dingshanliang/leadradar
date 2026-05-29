@@ -1,6 +1,5 @@
 """T-802: Compliance check — verify no automated harassment, personal phone scraping, or bypass capabilities."""
 
-import re
 
 import pytest
 from sqlmodel import SQLModel, Session, create_engine, select
@@ -221,36 +220,42 @@ class TestNoProhibitedCapabilities:
     def test_no_auto_dial_module(self):
         """No module for automated phone dialing."""
         import importlib
+
         with pytest.raises(ModuleNotFoundError):
             importlib.import_module("leadradar.outbound.auto_dial")
 
     def test_no_auto_wechat_module(self):
         """No module for automated WeChat adding."""
         import importlib
+
         with pytest.raises(ModuleNotFoundError):
             importlib.import_module("leadradar.outbound.auto_wechat")
 
     def test_no_auto_sms_module(self):
         """No module for automated SMS sending."""
         import importlib
+
         with pytest.raises(ModuleNotFoundError):
             importlib.import_module("leadradar.outbound.auto_sms")
 
     def test_no_captcha_bypass_module(self):
         """No module for CAPTCHA or anti-bot bypass."""
         import importlib
+
         with pytest.raises(ModuleNotFoundError):
             importlib.import_module("leadradar.crawlers.captcha_bypass")
 
     def test_no_login_bypass_module(self):
         """No module for login wall bypass."""
         import importlib
+
         with pytest.raises(ModuleNotFoundError):
             importlib.import_module("leadradar.crawlers.login_bypass")
 
     def test_no_personal_scraper_module(self):
         """No module for personal phone number scraping."""
         import importlib
+
         with pytest.raises(ModuleNotFoundError):
             importlib.import_module("leadradar.crawlers.personal_scraper")
 
@@ -263,6 +268,7 @@ class TestNoProhibitedCapabilities:
 class TestCallScriptEthics:
     def test_opening_identifies_sender(self):
         from leadradar.services.call_script import generate_call_script
+
         script = generate_call_script(
             organization_name="某县农业农村局",
             signal_title="品牌建设采购",
@@ -273,6 +279,7 @@ class TestCallScriptEthics:
     def test_opening_mentions_source(self):
         """Opening should indicate information comes from public sources."""
         from leadradar.services.call_script import generate_call_script
+
         script = generate_call_script(
             organization_name="某县农业农村局",
             signal_title="品牌建设采购意向",
@@ -284,6 +291,7 @@ class TestCallScriptEthics:
     def test_no_pressure_tactics(self):
         """Script should not contain high-pressure sales tactics."""
         from leadradar.services.call_script import generate_call_script
+
         script = generate_call_script(
             organization_name="某县农业农村局",
             signal_title="品牌建设采购",

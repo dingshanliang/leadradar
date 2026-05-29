@@ -2,19 +2,22 @@ from __future__ import annotations
 
 import re
 from abc import ABC, abstractmethod
-from typing import Any
 
 from leadradar.schemas import ExtractionResult
 
 
 class LLMProvider(ABC):
     @abstractmethod
-    async def extract(self, *, text: str, url: str | None = None, title: str | None = None) -> ExtractionResult:
+    async def extract(
+        self, *, text: str, url: str | None = None, title: str | None = None
+    ) -> ExtractionResult:
         """Extract a structured sales signal from public text."""
 
 
 class MockLLMProvider(LLMProvider):
-    async def extract(self, *, text: str, url: str | None = None, title: str | None = None) -> ExtractionResult:
+    async def extract(
+        self, *, text: str, url: str | None = None, title: str | None = None
+    ) -> ExtractionResult:
         return ExtractionResult.model_validate(
             {
                 "is_relevant": True,
@@ -62,7 +65,9 @@ class OpenAICompatibleLLMProvider(LLMProvider):
         self.base_url = base_url
         self.model = model
 
-    async def extract(self, *, text: str, url: str | None = None, title: str | None = None) -> ExtractionResult:
+    async def extract(
+        self, *, text: str, url: str | None = None, title: str | None = None
+    ) -> ExtractionResult:
         import json
         import time
 
@@ -131,10 +136,13 @@ def validate_extraction(result: ExtractionResult) -> ExtractionResult:
         return result
 
     evidence_fields = {e.field for e in result.evidence}
-    all_evidence_text = " ".join(e.text for e in result.evidence)
 
     # ── Evidence checks ──────────────────────────────────────────
-    if result.budget_amount and result.budget_amount.value and "budget_amount" not in evidence_fields:
+    if (
+        result.budget_amount
+        and result.budget_amount.value
+        and "budget_amount" not in evidence_fields
+    ):
         result.confidence = min(result.confidence, 0.6)
         result.uncertainties.append("budget_amount lacks evidence")
 
@@ -144,7 +152,7 @@ def validate_extraction(result: ExtractionResult) -> ExtractionResult:
     # ── Anti-fabrication: personal phone numbers ─────────────────
     for evidence in result.evidence:
         if _PHONE_PATTERN.search(evidence.text):
-            result.uncertainties.append(f"evidence contains suspected personal phone number")
+            result.uncertainties.append("evidence contains suspected personal phone number")
             result.confidence -= _CONFIDENCE_PENALTY
             break
 

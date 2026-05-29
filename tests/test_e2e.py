@@ -203,8 +203,6 @@ class TestEndToEndPipeline:
     @pytest.mark.asyncio
     async def test_pipeline_scores_consistent_with_direct_scoring(self, session, llm):
         """The score produced by pipeline should match direct scoring engine output."""
-        from leadradar.scoring import score_lead
-        from leadradar.schemas import LeadScoringInput
 
         source = Source(name="测试源", source_type="government_procurement")
         session.add(source)
@@ -228,9 +226,14 @@ class TestEndToEndPipeline:
         # The pipeline score should be a valid LeadScoringResult
         assert score.total_score >= 0
         assert score.total_score <= 100
-        assert score.budget_strength_score + score.scenario_fit_score + \
-            score.timing_score + score.reachability_score + score.leverage_score == \
-            score.total_score
+        assert (
+            score.budget_strength_score
+            + score.scenario_fit_score
+            + score.timing_score
+            + score.reachability_score
+            + score.leverage_score
+            == score.total_score
+        )
 
     @pytest.mark.asyncio
     async def test_pipeline_irrelevant_document_produces_no_lead(self, session):
@@ -240,6 +243,7 @@ class TestEndToEndPipeline:
         class IrrelevantMockProvider(MockLLMProvider):
             async def extract(self, *, text, url=None, title=None):
                 from leadradar.schemas import Evidence as Ev
+
                 return ExtractionResult(
                     is_relevant=False,
                     signal_type="irrelevant",
@@ -265,7 +269,9 @@ class TestEndToEndPipeline:
         session.commit()
 
         extraction_run, signal = await document_to_signal(
-            document=document, llm=llm, session=session,
+            document=document,
+            llm=llm,
+            session=session,
         )
 
         assert extraction_run is not None

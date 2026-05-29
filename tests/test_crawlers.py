@@ -22,6 +22,7 @@ def html_parser():
 
 # ── MockSearchProvider ─────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_mock_search_returns_results(mock_search):
     results = await mock_search.search("区域品牌")
@@ -46,6 +47,7 @@ async def test_mock_search_result_has_required_fields(mock_search):
 
 # ── LocalFixtureFetchProvider ──────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_mock_fetch_returns_html(mock_fetch):
     page = await mock_fetch.fetch("https://example.gov.cn/notice/1")
@@ -64,6 +66,7 @@ async def test_mock_fetch_preserves_url(mock_fetch):
 
 
 # ── HtmlDocumentParser ─────────────────────────────────────────
+
 
 def test_html_parser_extracts_text(html_parser):
     page = RawPage(
@@ -102,6 +105,7 @@ def test_html_parser_strips_styles(html_parser):
 
 
 # ── content_hash ───────────────────────────────────────────────
+
 
 def test_content_hash_deterministic():
     h1 = content_hash("hello world")

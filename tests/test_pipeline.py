@@ -1,7 +1,6 @@
 """Tests for T-501 (document_to_signal) and T-502 (signal_to_scored_lead)."""
 
 import json
-from uuid import uuid4
 
 import pytest
 from sqlmodel import Session, SQLModel, create_engine, select
@@ -18,7 +17,6 @@ from leadradar.models import (
     Signal,
     Source,
 )
-from leadradar.schemas import ExtractionResult, LeadScoringInput
 from leadradar.services.lead_service import (
     document_to_signal,
     signal_to_scored_lead,
@@ -133,7 +131,9 @@ class TestDocumentToSignal:
         assert signal.source_url == sample_document.url
 
     @pytest.mark.asyncio
-    async def test_extraction_run_persists_parsed_json(self, session, sample_document, llm_provider):
+    async def test_extraction_run_persists_parsed_json(
+        self, session, sample_document, llm_provider
+    ):
         extraction_run, _ = await document_to_signal(
             document=sample_document,
             llm=llm_provider,

@@ -28,7 +28,9 @@ def grade_for_score(score: int, rules: dict[str, Any]) -> str:
     return "D"
 
 
-def _sum_flags(flag_names: list[str], rule_section: dict[str, int], max_score: int) -> tuple[int, list[str]]:
+def _sum_flags(
+    flag_names: list[str], rule_section: dict[str, int], max_score: int
+) -> tuple[int, list[str]]:
     total = 0
     reasons: list[str] = []
     for flag in flag_names:
@@ -39,7 +41,9 @@ def _sum_flags(flag_names: list[str], rule_section: dict[str, int], max_score: i
     return min(total, max_score), reasons
 
 
-def score_lead(input_data: LeadScoringInput, rules: dict[str, Any] | None = None) -> LeadScoringResult:
+def score_lead(
+    input_data: LeadScoringInput, rules: dict[str, Any] | None = None
+) -> LeadScoringResult:
     rules = rules or load_scoring_rules()
     max_scores = rules["max_scores"]
 

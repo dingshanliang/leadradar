@@ -1,8 +1,6 @@
 """Tests for T-503: Call script generation based on customer type + signal + product package."""
 
-import pytest
 
-from leadradar.schemas import LeadScoringResult
 from leadradar.services.call_script import generate_call_script
 
 

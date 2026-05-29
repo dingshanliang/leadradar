@@ -81,9 +81,7 @@ def get_providers(
     """
     providers = _lazy_imports()
     if source not in providers:
-        raise ValueError(
-            f"Unknown source '{source}'. Available: {list(providers.keys())}"
-        )
+        raise ValueError(f"Unknown source '{source}'. Available: {list(providers.keys())}")
 
     cls = providers[source]
     search_kwargs: dict = {}
