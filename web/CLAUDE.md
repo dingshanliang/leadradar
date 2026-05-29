@@ -39,6 +39,10 @@ Global error boundaries: `app/error.tsx` (route-level) + `app/global-error.tsx` 
 ```bash
 npm run generate-types       # From Python module (recommended)
 npm run generate-types:live  # From running backend at localhost:8000
+npm run lint                 # eslint
+npm run test                 # vitest
+npm run build                # next build
 ```
 
 Generated types go to `lib/api-types.ts`. Gradually migrate from hand-written `lib/types.ts`.
+Runtime validation schemas go to `lib/schemas.ts` (zod).

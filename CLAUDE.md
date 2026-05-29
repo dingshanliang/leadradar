@@ -22,6 +22,8 @@ make format         # ruff 自动格式化
 make web-setup      # npm install
 make web-dev        # next dev (port 3000)
 make web-build      # next build
+npm run lint        # eslint
+npm run test        # vitest
 npm run generate-types  # 从 OpenAPI spec 生成 api-types.ts（需后端运行）
 
 # 运行单个测试
@@ -81,7 +83,7 @@ web/src/
 │   │   │   ├── page.tsx              # async 数据获取 + Suspense
 │   │   │   ├── loading.tsx           # 骨架屏
 │   │   │   └── error.tsx             # 路由级错误边界
-│   │   ├── config/page.tsx           # Tab 路由（Client Component）
+│   │   ├── config/page.tsx           # 配置页（评分规则可在线编辑，其余 Tab 只读展示）
 │   │   ├── report/page.tsx
 │   │   └── leads/[id]/page.tsx
 │   ├── login/page.tsx
@@ -103,6 +105,7 @@ web/src/
     ├── server-api.ts    # 服务端 API（Server Components 用）
     ├── api-types.ts     # OpenAPI 自动生成类型（npm run generate-types）
     ├── types.ts         # 手写类型（逐步迁移到 api-types.ts）
+    ├── schemas.ts       # zod 运行时校验 schema
     ├── constants.ts
     └── utils.ts
 ```
@@ -123,6 +126,8 @@ web/src/
 ### 数据库
 
 默认 SQLite（开发），生产用 PostgreSQL（`DATABASE_URL` 环境变量切换）。所有模型在 `models.py` 中定义，通过 SQLModel 自动建表。
+
+> 注意：`.env.example` 目前缺少 `JWT_SECRET` 和 `CORS_ORIGINS`，生产部署前需补齐。
 
 ## 核心约束
 
