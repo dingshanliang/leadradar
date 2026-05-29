@@ -49,3 +49,7 @@ task_plan.md
 web/node_modules/
 web/.next/
 web/out/
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+.beads-credential-key
