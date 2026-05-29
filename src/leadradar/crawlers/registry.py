@@ -13,6 +13,7 @@ def _lazy_imports() -> dict[str, type]:
 
     from leadradar.crawlers.ccgp import CCGPFetchProvider, CCGPSearchProvider
     from leadradar.crawlers.ggzy import GGZYFetchProvider, GGZYSearchProvider
+    from leadradar.crawlers.spc import SPCFetchProvider, SPCSearchProvider
     from leadradar.crawlers.provincial import (
         PROVINCES,
         ProvincialFetchProvider,
@@ -28,6 +29,11 @@ def _lazy_imports() -> dict[str, type]:
         "GGZY",
         (),
         {"search": GGZYSearchProvider, "fetch": GGZYFetchProvider},
+    )
+    _PROVIDERS["spc"] = type(
+        "SPC",
+        (),
+        {"search": SPCSearchProvider, "fetch": SPCFetchProvider},
     )
     for prov in PROVINCES:
         _PROVIDERS[prov] = type(
@@ -49,7 +55,7 @@ def get_providers(
 ) -> tuple[SearchProvider, FetchProvider]:
     """Return (search, fetch) providers for the named source.
 
-    Supported sources: "ccgp", "ggzy", "shandong", "guangdong", "sichuan".
+    Supported sources: "ccgp", "ggzy", "spc", "shandong", "guangdong", "sichuan", ...
     Raises ValueError for unknown source names.
     """
     providers = _lazy_imports()

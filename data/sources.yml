@@ -26,6 +26,15 @@ sources:
     enabled: false
     rate_limit_per_minute: 10
 
+  - id: spc
+    name: 食品安全抽检公布结果查询系统
+    source_type: quality_inspection
+    base_url: https://spcjsac.gsxt.gov.cn/
+    priority: P0
+    crawl_mode: api_json
+    enabled: true
+    rate_limit_per_minute: 20
+
   - id: aqsc_mtyx
     name: 全国名特优新农产品名录
     source_type: certification_registry
