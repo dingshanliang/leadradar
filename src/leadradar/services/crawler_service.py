@@ -10,6 +10,7 @@ from sqlmodel import Session, select
 from leadradar.crawlers.base import FetchProvider, SearchProvider
 from leadradar.crawlers.parser import HtmlDocumentParser, content_hash
 from leadradar.models import CrawlTask, CrawlTaskStatus, RawDocument
+from leadradar.services.dedup import deduplicate_search_results
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +41,7 @@ class CrawlerService:
 
         try:
             results = await self._search.search(query)
+            results = deduplicate_search_results(results)
             new_count = 0
             dup_count = 0
 
@@ -51,6 +53,10 @@ class CrawlerService:
                 page = await self._fetch.fetch(result.url)
                 text = self._parser.extract_text(page)
                 hash_val = content_hash(text)
+
+                if self._is_content_duplicate(hash_val):
+                    dup_count += 1
+                    continue
 
                 doc = RawDocument(
                     source_id=source_id,
@@ -87,5 +93,11 @@ class CrawlerService:
     def _is_duplicate(self, url: str) -> bool:
         existing = self._session.exec(
             select(RawDocument).where(RawDocument.url == url)
+        ).first()
+        return existing is not None
+
+    def _is_content_duplicate(self, hash_val: str) -> bool:
+        existing = self._session.exec(
+            select(RawDocument).where(RawDocument.content_hash == hash_val)
         ).first()
         return existing is not None
