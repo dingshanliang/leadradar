@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Poppins, Open_Sans } from "next/font/google";
+import { SWRProvider } from "@/providers/swr-provider";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -29,7 +30,9 @@ export default function RootLayout({
       lang="zh-CN"
       className={`${poppins.variable} ${openSans.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <SWRProvider>{children}</SWRProvider>
+      </body>
     </html>
   );
 }
