@@ -38,6 +38,19 @@ export async function getConfig(): Promise<AppConfig> {
   return apiFetch("/api/v1/config");
 }
 
+export async function getScoringConfig(): Promise<Record<string, unknown>> {
+  return apiFetch("/api/v1/config/scoring");
+}
+
+export async function updateScoringConfig(
+  payload: Record<string, unknown>
+): Promise<{ ok: boolean }> {
+  return apiFetch("/api/v1/config/scoring", {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function listSources(): Promise<Source[]> {
   return apiFetch("/api/v1/sources");
 }

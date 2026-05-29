@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-import tempfile
 from pathlib import Path
 
 import pytest
-import yaml
 from fastapi.testclient import TestClient
 
 from leadradar.main import app
@@ -15,7 +13,6 @@ from leadradar.services.config_service import (
     ScoringRulesUpdate,
     load_scoring_rules,
     save_scoring_rules,
-    update_scoring_rules,
 )
 
 VALID_RULES = {
@@ -68,7 +65,13 @@ class TestScoringRulesUpdate:
 
     def test_max_scores_not_100_rejected(self):
         data = dict(VALID_RULES)
-        data["max_scores"] = {"budget_strength": 30, "scenario_fit": 25, "timing": 20, "reachability": 10, "leverage": 10}
+        data["max_scores"] = {
+            "budget_strength": 30,
+            "scenario_fit": 25,
+            "timing": 20,
+            "reachability": 10,
+            "leverage": 10,
+        }
         with pytest.raises(ValueError, match="总和必须等于 100"):
             ScoringRulesUpdate(**data)
 
@@ -110,6 +113,7 @@ class TestConfigAPI:
 
     def test_put_scoring_config_valid(self, client: TestClient, tmp_path: Path, monkeypatch):
         from leadradar.services import config_service as cs
+
         monkeypatch.setattr(cs, "DEFAULT_SCORING_PATH", tmp_path / "scoring_rules.yml")
         res = client.put("/api/v1/config/scoring", json=VALID_RULES)
         assert res.status_code == 200

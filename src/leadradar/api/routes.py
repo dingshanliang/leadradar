@@ -48,7 +48,11 @@ from leadradar.models import (
     Source,
 )
 from leadradar.services.call_script import generate_call_script as _gen_script
-from leadradar.services.config_service import ScoringRulesUpdate, update_scoring_rules
+from leadradar.services.config_service import (
+    ScoringRulesUpdate,
+    load_scoring_rules,
+    update_scoring_rules,
+)
 
 router = APIRouter(prefix="/api/v1")
 
@@ -212,6 +216,11 @@ def get_config():
         scoring_dimensions=scoring_dimensions,
         product_packages=product_packages,
     )
+
+
+@router.get("/config/scoring")
+def get_scoring_config():
+    return load_scoring_rules()
 
 
 @router.put("/config/scoring")

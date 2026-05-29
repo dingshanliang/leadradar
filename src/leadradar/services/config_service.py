@@ -63,9 +63,7 @@ class ScoringRulesUpdate(BaseModel):
                 raise ValueError(f"max_scores 中缺少维度: {dim_name}")
             for key, val in sub_scores.items():
                 if val > max_val:
-                    raise ValueError(
-                        f"{dim_name}.{key} 的分值 {val} 超过了该维度满分 {max_val}"
-                    )
+                    raise ValueError(f"{dim_name}.{key} 的分值 {val} 超过了该维度满分 {max_val}")
         return self
 
 
@@ -75,9 +73,7 @@ def load_scoring_rules(path: Path | None = None) -> dict[str, Any]:
         return yaml.safe_load(f)
 
 
-def save_scoring_rules(
-    data: dict[str, Any], path: Path | None = None
-) -> None:
+def save_scoring_rules(data: dict[str, Any], path: Path | None = None) -> None:
     path = path or DEFAULT_SCORING_PATH
     tmp_path = path.with_suffix(".yml.tmp")
     bak_path = path.with_suffix(".yml.bak")
@@ -100,9 +96,7 @@ def save_scoring_rules(
     tmp_path.replace(path)
 
 
-def update_scoring_rules(
-    payload: ScoringRulesUpdate, path: Path | None = None
-) -> dict[str, Any]:
+def update_scoring_rules(payload: ScoringRulesUpdate, path: Path | None = None) -> dict[str, Any]:
     data = payload.model_dump()
     save_scoring_rules(data, path=path)
     return data

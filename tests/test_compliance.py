@@ -1,6 +1,5 @@
 """T-802: Compliance check — verify no automated harassment, personal phone scraping, or bypass capabilities."""
 
-
 import pytest
 from sqlmodel import SQLModel, Session, create_engine, select
 from sqlalchemy.pool import StaticPool
