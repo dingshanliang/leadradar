@@ -47,11 +47,11 @@ sources:
   - id: aqsc_mtyx
     name: 全国名特优新农产品名录
     source_type: certification_registry
-    base_url: https://www.aqsc.agri.cn/mtyx/cpml/
+    base_url: http://mtyx.aqsc.org/
     priority: P1
-    crawl_mode: registry_or_manual
-    enabled: false
-    rate_limit_per_minute: 10
+    crawl_mode: search_or_html
+    enabled: true
+    rate_limit_per_minute: 20
 
   - id: shandong
     name: 山东省政府采购网
