@@ -34,3 +34,30 @@ sources:
     crawl_mode: registry_or_manual
     enabled: false
     rate_limit_per_minute: 10
+
+  - id: shandong
+    name: 山东省政府采购网
+    source_type: government_procurement
+    base_url: http://www.ccgp-shandong.gov.cn/
+    priority: P0
+    crawl_mode: api_json
+    enabled: true
+    rate_limit_per_minute: 20
+
+  - id: guangdong
+    name: 广东省政府采购网
+    source_type: government_procurement
+    base_url: https://gdgpo.czt.gd.gov.cn/
+    priority: P0
+    crawl_mode: api_json
+    enabled: true
+    rate_limit_per_minute: 20
+
+  - id: sichuan
+    name: 四川省政府采购网
+    source_type: government_procurement
+    base_url: https://www.ccgp-sichuan.gov.cn/
+    priority: P0
+    crawl_mode: api_json
+    enabled: true
+    rate_limit_per_minute: 20
