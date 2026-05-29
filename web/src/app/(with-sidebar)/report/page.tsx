@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 import { MetricCard } from "@/components/dashboard/metric-card";
 
 interface WeeklyData {
@@ -23,7 +24,7 @@ async function fetchWeekly(): Promise<WeeklyData> {
 }
 
 export default function ReportPage() {
-  const { data, isLoading } = useSWR<WeeklyData>(
+  const { data, error, isLoading, mutate } = useSWR<WeeklyData>(
     "weekly-report",
     fetchWeekly,
     { revalidateOnFocus: false }
@@ -36,7 +37,9 @@ export default function ReportPage() {
       </h1>
       <p className="text-sm text-muted mb-6">过去 7 天数据汇总</p>
 
-      {isLoading || !data ? (
+      {error ? (
+        <ErrorState onRetry={() => mutate()} />
+      ) : isLoading || !data ? (
         <div className="grid grid-cols-4 gap-4">
           {Array.from({ length: 7 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
         </div>

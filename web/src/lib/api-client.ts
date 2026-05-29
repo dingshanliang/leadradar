@@ -13,12 +13,38 @@ import type {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+function getAuthToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("token");
+}
+
+function buildAuthHeaders(): Record<string, string> {
+  const token = getAuthToken();
+  if (!token) return {};
+  return { Authorization: `Bearer ${token}` };
+}
+
+function handleUnauthorized(): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
+  window.location.href = "/login";
+}
+
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const { headers: customHeaders, ...rest } = options ?? {};
   const res = await fetch(`${API_BASE}${path}`, {
     ...rest,
-    headers: { "Content-Type": "application/json", ...customHeaders },
+    headers: {
+      "Content-Type": "application/json",
+      ...buildAuthHeaders(),
+      ...customHeaders,
+    },
   });
+  if (res.status === 401) {
+    handleUnauthorized();
+    throw new Error("Unauthorized");
+  }
   if (!res.ok) {
     const error = await res.json().catch(() => ({ detail: res.statusText }));
     throw new Error(error.detail || `API Error: ${res.status}`);
@@ -103,7 +129,13 @@ export async function exportLeads(
 ): Promise<void> {
   const params = new URLSearchParams({ format });
   if (grade) params.set("grade", grade);
-  const res = await fetch(`${API_BASE}/api/v1/leads/export?${params}`);
+  const res = await fetch(`${API_BASE}/api/v1/leads/export?${params}`, {
+    headers: buildAuthHeaders(),
+  });
+  if (res.status === 401) {
+    handleUnauthorized();
+    throw new Error("Unauthorized");
+  }
   if (!res.ok) throw new Error(`Export failed: ${res.status}`);
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);

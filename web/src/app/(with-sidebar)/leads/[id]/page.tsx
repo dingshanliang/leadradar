@@ -11,6 +11,7 @@ import { ComplianceNote } from "@/components/lead-detail/compliance-note";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 import { getLeadDetail } from "@/lib/api-client";
 import { useMeta } from "@/hooks/use-meta";
 import { formatBudget } from "@/lib/utils";
@@ -22,21 +23,24 @@ export default function LeadDetailPage() {
   const leadId = params.id as string;
 
   const { signalTypeLabels } = useMeta();
-  const { data: lead, isLoading, error } = useSWR<LeadDetail>(
+  const { data: lead, error, isLoading, mutate } = useSWR<LeadDetail>(
     `lead-${leadId}`,
     () => getLeadDetail(leadId)
   );
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <p className="text-lg font-medium text-foreground">线索未找到</p>
-          <p className="text-sm text-muted mt-1">{error.message}</p>
-          <Button variant="secondary" className="mt-4" onClick={() => router.push("/")}>
-            返回线索池
-          </Button>
-        </div>
+      <div className="px-8 py-6">
+        <button
+          onClick={() => router.push("/")}
+          className="flex items-center gap-1 text-sm text-muted hover:text-foreground mb-4 cursor-pointer transition-colors duration-150"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 19.5L8.25 12l7.5-7.5" />
+          </svg>
+          返回线索池
+        </button>
+        <ErrorState onRetry={() => mutate()} />
       </div>
     );
   }

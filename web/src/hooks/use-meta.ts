@@ -15,7 +15,7 @@ function toLabelMap(items: { key: string; label: string }[]): Record<string, str
 }
 
 export function useMeta() {
-  const { data: meta } = useSWR<Meta>("meta", getMeta, {
+  const { data: meta, error, mutate } = useSWR<Meta>("meta", getMeta, {
     revalidateOnFocus: false,
     dedupingInterval: 60000,
   });
@@ -31,5 +31,5 @@ export function useMeta() {
   const grades = meta?.grades ?? ["S", "A", "B", "C", "D"];
   const budgetBuckets = meta?.budget_buckets ?? ["<10万", "10-50万", "50-100万", "100-500万", ">500万"];
 
-  return { signalTypeLabels, statusLabels, grades, budgetBuckets };
+  return { signalTypeLabels, statusLabels, grades, budgetBuckets, error, mutate };
 }

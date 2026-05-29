@@ -5,13 +5,14 @@ import { LeadTable } from "@/components/leads/lead-table";
 import { LeadFiltersBar } from "@/components/leads/lead-filters";
 import { ExportButton } from "@/components/leads/export-button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLeads } from "@/hooks/use-leads";
 import type { LeadFilters } from "@/lib/types";
 
 export default function LeadPoolPage() {
   const [filters, setFilters] = useState<LeadFilters>({ limit: 50, offset: 0 });
-  const { leads, isLoading, mutate } = useLeads(filters);
+  const { leads, error, isLoading, mutate } = useLeads(filters);
 
   const handleStatusChange = useCallback(() => {
     mutate();
@@ -39,7 +40,9 @@ export default function LeadPoolPage() {
 
       {/* Table */}
       <div className="bg-white rounded-xl border border-border p-4">
-        {isLoading ? (
+        {error ? (
+          <ErrorState onRetry={() => mutate()} />
+        ) : isLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-12 w-full" />

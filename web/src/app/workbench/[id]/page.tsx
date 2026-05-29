@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { CopyButton } from "@/components/ui/copy-button";
 import { GradeBadge } from "@/components/leads/grade-badge";
 import { StatusBadge } from "@/components/leads/status-badge";
+import { ErrorState } from "@/components/ui/error-state";
 import { CALL_RESULTS } from "@/lib/constants";
 import { useMeta } from "@/hooks/use-meta";
 import { FollowUpHistory } from "@/components/lead-detail/follow-up-history";
@@ -19,11 +20,11 @@ export default function WorkbenchPage() {
   const router = useRouter();
   const leadId = params.id as string;
 
-  const { data: lead, isLoading, mutate: mutateLead } = useSWR<LeadDetail>(
+  const { data: lead, error: leadError, isLoading, mutate: mutateLead } = useSWR<LeadDetail>(
     `lead-${leadId}`,
     () => getLeadDetail(leadId)
   );
-  const { data: followUps, mutate: mutateFollowUps } = useSWR<FollowUpOut[]>(
+  const { data: followUps, error: followUpsError, mutate: mutateFollowUps } = useSWR<FollowUpOut[]>(
     `followups-${leadId}`,
     () => listFollowUps(leadId)
   );
@@ -53,6 +54,14 @@ export default function WorkbenchPage() {
       setSubmitting(false);
     }
   }, [leadId, channel, result, notes, mutateFollowUps, mutateLead]);
+
+  if (leadError) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <ErrorState onRetry={() => mutateLead()} />
+      </div>
+    );
+  }
 
   if (isLoading || !lead) {
     return (
@@ -238,12 +247,17 @@ export default function WorkbenchPage() {
         </div>
 
         {/* History */}
-        {followUps && followUps.length > 0 && (
+        {followUpsError ? (
+          <div className="mt-6 pt-4 border-t border-border">
+            <p className="text-xs text-muted mb-3">历史跟进</p>
+            <ErrorState message="跟进记录加载失败" onRetry={() => mutateFollowUps()} />
+          </div>
+        ) : followUps && followUps.length > 0 ? (
           <div className="mt-6 pt-4 border-t border-border">
             <p className="text-xs text-muted mb-3">历史跟进</p>
             <FollowUpHistory followUps={followUps} compact />
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
