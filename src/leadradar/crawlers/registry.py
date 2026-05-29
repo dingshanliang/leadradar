@@ -20,6 +20,7 @@ def _lazy_imports() -> dict[str, type]:
         GreenFoodFetchProvider,
         GreenFoodSearchProvider,
     )
+    from leadradar.crawlers.plap import PLAPFetchProvider, PLAPSearchProvider
     from leadradar.crawlers.provincial import (
         PROVINCES,
         ProvincialFetchProvider,
@@ -55,6 +56,11 @@ def _lazy_imports() -> dict[str, type]:
         "GreenFood",
         (),
         {"search": GreenFoodSearchProvider, "fetch": GreenFoodFetchProvider},
+    )
+    _PROVIDERS["plap"] = type(
+        "PLAP",
+        (),
+        {"search": PLAPSearchProvider, "fetch": PLAPFetchProvider},
     )
     for prov in PROVINCES:
         _PROVIDERS[prov] = type(
