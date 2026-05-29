@@ -65,10 +65,10 @@ def _normalize_url(url: str) -> str:
 
 
 def _clean_title(title: str) -> str:
-    """Clean title for comparison: strip HTML tags, whitespace, dates."""
+    """Clean title for comparison: strip HTML tags, dates, normalize whitespace."""
     cleaned = re.sub(r"</?em>", "", title)
     cleaned = re.sub(r"\d{4}[-年]\d{1,2}[-月]\d{1,2}[日]?", "", cleaned)
-    cleaned = re.sub(r"\s+", "", cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned)
     return cleaned.lower().strip()
 
 

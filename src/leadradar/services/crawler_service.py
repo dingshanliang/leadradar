@@ -44,6 +44,7 @@ class CrawlerService:
             results = deduplicate_search_results(results)
             new_count = 0
             dup_count = 0
+            seen_hashes: set[str] = set()
 
             for result in results:
                 if self._is_duplicate(result.url):
@@ -54,10 +55,11 @@ class CrawlerService:
                 text = self._parser.extract_text(page)
                 hash_val = content_hash(text)
 
-                if self._is_content_duplicate(hash_val):
+                if hash_val in seen_hashes or self._is_content_duplicate(hash_val):
                     dup_count += 1
                     continue
 
+                seen_hashes.add(hash_val)
                 doc = RawDocument(
                     source_id=source_id,
                     url=result.url,

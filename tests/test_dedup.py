@@ -54,8 +54,8 @@ class TestCleanTitle:
         assert "2026" not in result
 
     def test_collapses_whitespace(self):
-        assert " " not in _clean_title("采购  公告")
-        assert " " not in _clean_title("采购公告  ")
+        assert _clean_title("采购  公告") == "采购 公告"
+        assert _clean_title("采购公告  ") == "采购公告"
 
 
 # ── Test _is_similar_to_any ──────────────────────────────────────────
