@@ -92,6 +92,11 @@ class TestProvincialConfig:
         assert "shandong" in PROVINCES
         assert "guangdong" in PROVINCES
         assert "sichuan" in PROVINCES
+        assert "fujian" in PROVINCES
+        assert "gansu" in PROVINCES
+        assert "hainan" in PROVINCES
+        assert "jiangxi" in PROVINCES
+        assert "neimenggu" in PROVINCES
 
     def test_shandong_platform(self):
         assert PROVINCES["shandong"].platform == "custom_vue"
@@ -100,14 +105,17 @@ class TestProvincialConfig:
         assert PROVINCES["guangdong"].platform == "gpcms"
         assert PROVINCES["sichuan"].platform == "gpcms"
 
+    def test_new_gpcms_provinces_share_platform(self):
+        for prov in ("fujian", "gansu", "hainan", "jiangxi", "neimenggu"):
+            assert PROVINCES[prov].platform == "gpcms", f"{prov} should be gpcms"
+
     def test_gpcms_have_site_id(self):
-        assert PROVINCES["guangdong"].site_id is not None
-        assert PROVINCES["sichuan"].site_id is not None
-        assert PROVINCES["guangdong"].site_id != PROVINCES["sichuan"].site_id
+        for prov in ("guangdong", "sichuan", "fujian", "gansu", "hainan", "jiangxi", "neimenggu"):
+            assert PROVINCES[prov].site_id is not None, f"{prov} missing site_id"
 
     def test_unknown_province_raises(self):
         with pytest.raises(ValueError, match="Unknown province"):
-            ProvincialSearchProvider("hainan")
+            ProvincialSearchProvider("xizang")
 
 
 # ── Test custom_vue record parser (Shandong) ────────────────────────

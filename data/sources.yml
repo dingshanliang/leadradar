@@ -61,3 +61,48 @@ sources:
     crawl_mode: api_json
     enabled: true
     rate_limit_per_minute: 20
+
+  - id: fujian
+    name: 福建省政府采购网
+    source_type: government_procurement
+    base_url: https://zfcg.czt.fujian.gov.cn/
+    priority: P0
+    crawl_mode: api_json
+    enabled: true
+    rate_limit_per_minute: 20
+
+  - id: gansu
+    name: 甘肃省政府采购网
+    source_type: government_procurement
+    base_url: http://www.ccgp-gansu.gov.cn/
+    priority: P0
+    crawl_mode: api_json
+    enabled: true
+    rate_limit_per_minute: 20
+
+  - id: hainan
+    name: 海南省政府采购网
+    source_type: government_procurement
+    base_url: https://ccgp-hainan.gov.cn/
+    priority: P0
+    crawl_mode: api_json
+    enabled: true
+    rate_limit_per_minute: 20
+
+  - id: jiangxi
+    name: 江西省政府采购网
+    source_type: government_procurement
+    base_url: https://zfcg.jxf.gov.cn/
+    priority: P0
+    crawl_mode: api_json
+    enabled: true
+    rate_limit_per_minute: 20
+
+  - id: neimenggu
+    name: 内蒙古自治区政府采购网
+    source_type: government_procurement
+    base_url: https://www.ccgp-neimenggu.gov.cn/
+    priority: P0
+    crawl_mode: api_json
+    enabled: true
+    rate_limit_per_minute: 20

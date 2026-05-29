@@ -71,6 +71,46 @@ PROVINCES: dict[str, ProvincialConfig] = {
         site_id="94c965cc-c55d-4f92-8469-d5875c68bd04",
         channel_ids="fca71be5-fc0c-45db-96af-f513e9abda9d,95ff31f3-a1af-4bc4-b1a2-54c894476193",
     ),
+    "fujian": ProvincialConfig(
+        name="福建省政府采购网",
+        base_url="https://zfcg.czt.fujian.gov.cn",
+        search_url="https://zfcg.czt.fujian.gov.cn/gpcms/rest/web/v2/info/selectInfoForIndex",
+        platform="gpcms",
+        site_id="d36a6e8b-4363-4b52-a00b-79ca47033923",
+        channel_ids="fca71be5-fc0c-45db-96af-f513e9abda9d,95ff31f3-a1af-4bc4-b1a2-54c894476193",
+    ),
+    "gansu": ProvincialConfig(
+        name="甘肃省政府采购网",
+        base_url="http://www.ccgp-gansu.gov.cn",
+        search_url="http://www.ccgp-gansu.gov.cn/gpcms/rest/web/v2/info/selectInfoForIndex",
+        platform="gpcms",
+        site_id="793f8fcd-77c4-4c76-9ce6-9de8deddee8d",
+        channel_ids="fca71be5-fc0c-45db-96af-f513e9abda9d,95ff31f3-a1af-4bc4-b1a2-54c894476193",
+    ),
+    "hainan": ProvincialConfig(
+        name="海南省政府采购网",
+        base_url="https://ccgp-hainan.gov.cn",
+        search_url="https://ccgp-hainan.gov.cn/gpcms/rest/web/v2/info/selectInfoForIndex",
+        platform="gpcms",
+        site_id="64094aa43673485b9b889699ae024643",
+        channel_ids="fca71be5-fc0c-45db-96af-f513e9abda9d,95ff31f3-a1af-4bc4-b1a2-54c894476193",
+    ),
+    "jiangxi": ProvincialConfig(
+        name="江西省政府采购网",
+        base_url="https://zfcg.jxf.gov.cn",
+        search_url="https://zfcg.jxf.gov.cn/gpcms/rest/web/v2/info/selectInfoForIndex",
+        platform="gpcms",
+        site_id="93BB7F0CFA5A6362B1100531C50AE36B",
+        channel_ids="fca71be5-fc0c-45db-96af-f513e9abda9d,95ff31f3-a1af-4bc4-b1a2-54c894476193",
+    ),
+    "neimenggu": ProvincialConfig(
+        name="内蒙古自治区政府采购网",
+        base_url="https://www.ccgp-neimenggu.gov.cn",
+        search_url="https://www.ccgp-neimenggu.gov.cn/gpcms/rest/web/v2/info/selectInfoForIndex",
+        platform="gpcms",
+        site_id="556c65d-c55d-4f92-8469-d5675c58bd04",
+        channel_ids="fca71be5-fc0c-45db-96af-f513e9abda9d,95ff31f3-a1af-4bc4-b1a2-54c894476193",
+    ),
 }
 
 
