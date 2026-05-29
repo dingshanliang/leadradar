@@ -35,6 +35,15 @@ sources:
     enabled: true
     rate_limit_per_minute: 20
 
+  - id: zycg
+    name: 中央政府采购网
+    source_type: government_procurement
+    base_url: https://www.zycg.gov.cn/
+    priority: P1
+    crawl_mode: api_json
+    enabled: true
+    rate_limit_per_minute: 20
+
   - id: aqsc_mtyx
     name: 全国名特优新农产品名录
     source_type: certification_registry

@@ -14,6 +14,7 @@ def _lazy_imports() -> dict[str, type]:
     from leadradar.crawlers.ccgp import CCGPFetchProvider, CCGPSearchProvider
     from leadradar.crawlers.ggzy import GGZYFetchProvider, GGZYSearchProvider
     from leadradar.crawlers.spc import SPCFetchProvider, SPCSearchProvider
+    from leadradar.crawlers.zycg import ZYCGFetchProvider, ZYCGSearchProvider
     from leadradar.crawlers.provincial import (
         PROVINCES,
         ProvincialFetchProvider,
@@ -34,6 +35,11 @@ def _lazy_imports() -> dict[str, type]:
         "SPC",
         (),
         {"search": SPCSearchProvider, "fetch": SPCFetchProvider},
+    )
+    _PROVIDERS["zycg"] = type(
+        "ZYCG",
+        (),
+        {"search": ZYCGSearchProvider, "fetch": ZYCGFetchProvider},
     )
     for prov in PROVINCES:
         _PROVIDERS[prov] = type(
