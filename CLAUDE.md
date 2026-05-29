@@ -22,6 +22,7 @@ make format         # ruff 自动格式化
 make web-setup      # npm install
 make web-dev        # next dev (port 3000)
 make web-build      # next build
+npm run generate-types  # 从 OpenAPI spec 生成 api-types.ts（需后端运行）
 
 # 运行单个测试
 pytest tests/test_scoring.py -q
@@ -64,9 +65,54 @@ pytest tests/test_scoring.py::test_grade_thresholds -v
 
 ### 前端 (`web/`)
 
-Next.js 16 + React 19 + Tailwind CSS 4 + SWR + Recharts。页面在 `web/src/app/`，组件在 `web/src/components/`。有侧边栏布局 (`with-sidebar`)、工作台 (`workbench`)、线索列表/详情 (`leads`, `lead-detail`)、仪表盘 (`dashboard`)。
+Next.js 16 + React 19 + Tailwind CSS 4 + SWR + Recharts + openapi-typescript。
 
 **重要**：此 Next.js 版本有 breaking changes，修改前端前必须先阅读 `web/node_modules/next/dist/docs/` 中的指南。
+
+#### 目录结构
+
+```
+web/src/
+├── app/
+│   ├── error.tsx, global-error.tsx   # 全局错误边界（'use client'）
+│   ├── (with-sidebar)/               # 主布局（侧边栏）
+│   │   ├── page.tsx                  # 线索池（Client Component + SWR）
+│   │   ├── dashboard/                # Server Component（force-dynamic）
+│   │   │   ├── page.tsx              # async 数据获取 + Suspense
+│   │   │   ├── loading.tsx           # 骨架屏
+│   │   │   └── error.tsx             # 路由级错误边界
+│   │   ├── config/page.tsx           # Tab 路由（Client Component）
+│   │   ├── report/page.tsx
+│   │   └── leads/[id]/page.tsx
+│   ├── login/page.tsx
+│   └── workbench/[id]/page.tsx
+├── components/
+│   ├── config/          # 5 个独立 Tab 组件（各自管理 SWR）
+│   ├── dashboard/       # 图表组件（metric-card, signal-type-chart, package-pie-chart, province-bar-chart）
+│   ├── layout/          # 侧边栏布局
+│   ├── lead-detail/     # 线索详情子组件
+│   ├── leads/           # 线索列表
+│   ├── ui/              # 通用 UI（button, card, skeleton, error-state, empty-state）
+│   └── workbench/       # 工作台
+├── hooks/
+│   ├── use-leads.ts     # 线索列表 SWR
+│   ├── use-meta.ts      # 枚举元数据 SWR
+│   └── use-scoring-edit.ts  # 评分规则编辑（状态+校验+保存）
+└── lib/
+    ├── api-client.ts    # 客户端 API（自动注入 JWT + 401 跳转）
+    ├── server-api.ts    # 服务端 API（Server Components 用）
+    ├── api-types.ts     # OpenAPI 自动生成类型（npm run generate-types）
+    ├── types.ts         # 手写类型（逐步迁移到 api-types.ts）
+    ├── constants.ts
+    └── utils.ts
+```
+
+#### 前端开发规范
+
+- **错误处理**：所有 SWR 调用必须解构 `error` + `mutate`，失败时展示 `ErrorState` 组件
+- **Server Components**：仅展示型页面用 Server Component，交互页面保持 Client Component
+- **组件拆分**：页面只做数据获取+组合，业务逻辑抽到 hooks，UI 抽到独立组件
+- **类型生成**：`npm run generate-types` 从后端 OpenAPI spec 生成 `api-types.ts`
 
 ### 数据文件 (`data/`)
 
@@ -97,3 +143,51 @@ Next.js 16 + React 19 + Tailwind CSS 4 + SWR + Recharts。页面在 `web/src/app
 ## CI
 
 GitHub Actions (`.github/workflows/ci.yml`)：Python 3.11/3.12 矩阵运行 lint + test，Node 20 运行前端 lint + build。
+
+
+<!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
+## Beads Issue Tracker
+
+This project uses **bd (beads)** for issue tracking. Run `bd prime` to see full workflow context and commands.
+
+### Quick Reference
+
+```bash
+bd ready              # Find available work
+bd show <id>          # View issue details
+bd update <id> --claim  # Claim work
+bd close <id>         # Complete work
+```
+
+### Rules
+
+- Use `bd` for ALL task tracking — do NOT use TodoWrite, TaskCreate, or markdown TODO lists
+- Run `bd prime` for detailed command reference and session close protocol
+- Use `bd remember` for persistent knowledge — do NOT use MEMORY.md files
+
+## Session Completion
+
+**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+
+**MANDATORY WORKFLOW:**
+
+1. **File issues for remaining work** - Create issues for anything that needs follow-up
+2. **Run quality gates** (if code changed) - Tests, linters, builds
+3. **Update issue status** - Close finished work, update in-progress items
+4. **PUSH TO REMOTE** - This is MANDATORY:
+   ```bash
+   git pull --rebase
+   bd dolt push
+   git push
+   git status  # MUST show "up to date with origin"
+   ```
+5. **Clean up** - Clear stashes, prune remote branches
+6. **Verify** - All changes committed AND pushed
+7. **Hand off** - Provide context for next session
+
+**CRITICAL RULES:**
+- Work is NOT complete until `git push` succeeds
+- NEVER stop before pushing - that leaves work stranded locally
+- NEVER say "ready to push when you are" - YOU must push
+- If push fails, resolve and retry until it succeeds
+<!-- END BEADS INTEGRATION -->
