@@ -11,7 +11,6 @@ from leadradar.models import (
     ExtractionRunStatus,
     Lead,
     LeadScore,
-    LeadStatus,
     Organization,
     RawDocument,
     Signal,
@@ -19,6 +18,10 @@ from leadradar.models import (
 from leadradar.schemas import ExtractionResult, LeadScoringInput
 from leadradar.scoring import score_lead
 from leadradar.services.flag_derivation import default_engine
+from leadradar.services.lead_conversion import (
+    LeadConversionEngine,
+    OrganizationData,
+)
 
 
 # ── T-501: RawDocument → ExtractionRun → Signal ───────────────
@@ -106,40 +109,38 @@ def signal_to_scored_lead(
     extraction_run = _get_extraction_run_for_signal(signal, session)
     extraction_result = _parse_extraction_result(extraction_run)
 
-    org = _find_or_create_organization(signal, extraction_result, session)
+    # Pure conversion: no DB side effects
+    conversion = LeadConversionEngine(flag_engine=default_engine()).convert(
+        signal, extraction_result
+    )
+
+    # Persistence: organisation (with dedup), lead, score
+    org = _persist_organization(conversion.organization_data, session)
     signal.organization_id = org.id
     session.add(signal)
-
-    scoring_input = default_engine().derive(signal, extraction_result)
 
     lead = Lead(
         organization_id=org.id,
         primary_signal_id=signal.id,
-        customer_type=extraction_result.customer_type if extraction_result else None,
-        recommended_package=(
-            extraction_result.product_fit[0]
-            if extraction_result and extraction_result.product_fit
-            else None
-        ),
-        budget_bucket=_budget_bucket(signal.budget_amount),
-        lead_status=LeadStatus.NEW,
+        customer_type=conversion.lead_data.customer_type,
+        recommended_package=conversion.lead_data.recommended_package,
+        budget_bucket=conversion.lead_data.budget_bucket,
+        lead_status=conversion.lead_data.lead_status,
     )
     session.add(lead)
     session.commit()
     session.refresh(lead)
 
-    scoring_result = score_lead(scoring_input)
-
     lead_score = LeadScore(
         lead_id=lead.id,
-        total_score=scoring_result.total_score,
-        grade=scoring_result.grade,
-        budget_strength_score=scoring_result.breakdown["budget_strength"],
-        scenario_fit_score=scoring_result.breakdown["scenario_fit"],
-        timing_score=scoring_result.breakdown["timing"],
-        reachability_score=scoring_result.breakdown["reachability"],
-        leverage_score=scoring_result.breakdown["leverage"],
-        score_reason_json=json.dumps(scoring_result.reasons, ensure_ascii=False),
+        total_score=conversion.lead_score_data.total_score,
+        grade=conversion.lead_score_data.grade,
+        budget_strength_score=conversion.lead_score_data.budget_strength_score,
+        scenario_fit_score=conversion.lead_score_data.scenario_fit_score,
+        timing_score=conversion.lead_score_data.timing_score,
+        reachability_score=conversion.lead_score_data.reachability_score,
+        leverage_score=conversion.lead_score_data.leverage_score,
+        score_reason_json=conversion.lead_score_data.score_reason_json,
     )
     session.add(lead_score)
     session.commit()
@@ -165,61 +166,30 @@ def _parse_extraction_result(extraction_run: ExtractionRun | None) -> Extraction
         return None
 
 
-def _find_or_create_organization(
-    signal: Signal,
-    extraction_result: ExtractionResult | None,
+def _persist_organization(
+    data: OrganizationData,
     session: Session,
 ) -> Organization:
-    """Find existing org by name or create a new one."""
-    org_name = None
-    region = None
-
-    if extraction_result:
-        org_name = extraction_result.organization_name
-        if extraction_result.region:
-            region = extraction_result.region
-
-    if not org_name:
-        org = Organization(name="未知机构")
-        session.add(org)
-        session.commit()
-        session.refresh(org)
-        return org
-
-    normalized = org_name.strip().lower()
-    existing = session.exec(
-        select(Organization).where(Organization.normalized_name == normalized)
-    ).first()
-
-    if existing:
-        return existing
+    """Find existing org by normalized name or create a new one."""
+    if data.normalized_name:
+        existing = session.exec(
+            select(Organization).where(Organization.normalized_name == data.normalized_name)
+        ).first()
+        if existing:
+            return existing
 
     org = Organization(
-        name=org_name,
-        normalized_name=normalized,
-        province=region.province if region else None,
-        city=region.city if region else None,
-        county=region.county if region else None,
-        organization_type=(extraction_result.customer_type if extraction_result else None),
+        name=data.name,
+        normalized_name=data.normalized_name,
+        province=data.province,
+        city=data.city,
+        county=data.county,
+        organization_type=data.organization_type,
     )
     session.add(org)
     session.commit()
     session.refresh(org)
     return org
-
-
-def _budget_bucket(amount: float | None) -> str | None:
-    if amount is None:
-        return None
-    if amount < 100_000:
-        return "<10万"
-    if amount < 500_000:
-        return "10-50万"
-    if amount < 1_000_000:
-        return "50-100万"
-    if amount < 5_000_000:
-        return "100-500万"
-    return ">500万"
 
 
 # ── Existing helpers ───────────────────────────────────────────
