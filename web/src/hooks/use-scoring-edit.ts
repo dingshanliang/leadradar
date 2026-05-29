@@ -3,6 +3,10 @@
 import { useState, useMemo, useCallback } from "react";
 import useSWR from "swr";
 import { getScoringConfig, updateScoringConfig } from "@/lib/api-client";
+import {
+  scoringRulesUpdateSchema,
+  validateScoringRules,
+} from "@/lib/schemas";
 
 const DIM_NAMES: Record<string, string> = {
   budget_strength: "预算强度",
@@ -40,47 +44,18 @@ export function useScoringEdit() {
   const [isSaving, setIsSaving] = useState(false);
 
   const validationErrors = useMemo(() => {
-    const errors: string[] = [];
-    if (!editedData) return errors;
+    if (!editedData) return [];
 
-    const maxScores = editedData.max_scores as Record<string, number> | undefined;
-    if (maxScores) {
-      const total = Object.values(maxScores).reduce(
-        (sum, v) => sum + (Number(v) || 0),
-        0
+    // Structural validation via zod
+    const parseResult = scoringRulesUpdateSchema.safeParse(editedData);
+    if (!parseResult.success) {
+      return parseResult.error.issues.map(
+        (issue) => `${issue.path.join(".")}: ${issue.message}`
       );
-      if (total !== 100) {
-        errors.push(`维度权重总和必须等于 100，当前为 ${total}`);
-      }
     }
 
-    const grades = editedData.grades as Record<string, number> | undefined;
-    if (grades) {
-      const values = GRADE_ORDER.map((g) => Number(grades[g]) || 0);
-      for (let i = 0; i < values.length - 1; i++) {
-        if (values[i] <= values[i + 1]) {
-          errors.push(
-            `等级阈值必须严格递减: ${GRADE_ORDER[i]}(${values[i]}) 应大于 ${GRADE_ORDER[i + 1]}(${values[i + 1]})`
-          );
-        }
-      }
-    }
-
-    for (const dim of DIMENSIONS) {
-      const maxVal = maxScores?.[dim];
-      const subScores = editedData[dim] as Record<string, number> | undefined;
-      if (subScores && maxVal !== undefined) {
-        for (const [key, val] of Object.entries(subScores)) {
-          if (Number(val) > Number(maxVal)) {
-            errors.push(
-              `${DIM_NAMES[dim] || dim}.${key} 的分值 ${val} 超过了该维度满分 ${maxVal}`
-            );
-          }
-        }
-      }
-    }
-
-    return errors;
+    // Semantic/business-rule validation
+    return validateScoringRules(parseResult.data);
   }, [editedData]);
 
   const isValid = validationErrors.length === 0;

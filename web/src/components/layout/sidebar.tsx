@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   {
-    href: "/",
+    href: "/" as const,
     label: "线索池",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -15,7 +15,7 @@ const NAV_ITEMS = [
     ),
   },
   {
-    href: "/dashboard",
+    href: "/dashboard" as const,
     label: "信号看板",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -24,7 +24,7 @@ const NAV_ITEMS = [
     ),
   },
   {
-    href: "/report",
+    href: "/report" as const,
     label: "周报",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -33,7 +33,7 @@ const NAV_ITEMS = [
     ),
   },
   {
-    href: "/config",
+    href: "/config" as const,
     label: "配置",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

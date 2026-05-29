@@ -10,6 +10,11 @@ import type {
   Source,
   Stats,
 } from "./types";
+import {
+  leadStatusUpdateSchema,
+  followUpCreateSchema,
+  scoringRulesUpdateSchema,
+} from "./schemas";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -71,9 +76,15 @@ export async function getScoringConfig(): Promise<Record<string, unknown>> {
 export async function updateScoringConfig(
   payload: Record<string, unknown>
 ): Promise<{ ok: boolean }> {
+  const parsed = scoringRulesUpdateSchema.safeParse(payload);
+  if (!parsed.success) {
+    throw new Error(
+      `校验失败: ${parsed.error.issues.map((i) => i.message).join(", ")}`
+    );
+  }
   return apiFetch("/api/v1/config/scoring", {
     method: "PUT",
-    body: JSON.stringify(payload),
+    body: JSON.stringify(parsed.data),
   });
 }
 
@@ -115,9 +126,15 @@ export async function updateLeadStatus(
   leadId: string,
   status: string
 ): Promise<void> {
+  const parsed = leadStatusUpdateSchema.safeParse({ status });
+  if (!parsed.success) {
+    throw new Error(
+      `无效的状态值: ${status}`
+    );
+  }
   await apiFetch(`/api/v1/leads/${leadId}/status`, {
     method: "PATCH",
-    body: JSON.stringify({ status }),
+    body: JSON.stringify(parsed.data),
   });
 }
 
@@ -158,9 +175,15 @@ export async function createFollowUp(
   leadId: string,
   data: FollowUpCreate
 ): Promise<FollowUpOut> {
+  const parsed = followUpCreateSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new Error(
+      `校验失败: ${parsed.error.issues.map((i) => i.message).join(", ")}`
+    );
+  }
   return apiFetch(`/api/v1/leads/${leadId}/follow-ups`, {
     method: "POST",
-    body: JSON.stringify(data),
+    body: JSON.stringify(parsed.data),
   });
 }
 
