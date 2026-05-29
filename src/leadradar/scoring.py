@@ -6,6 +6,7 @@ from typing import Any
 import yaml
 
 from leadradar.schemas import LeadScoringInput, LeadScoringResult
+from leadradar.services.scoring_rule_set import ScoringRuleSet
 
 DEFAULT_RULES_PATH = Path(__file__).resolve().parents[2] / "data" / "scoring_rules.yml"
 
@@ -15,65 +16,43 @@ def load_scoring_rules(path: Path = DEFAULT_RULES_PATH) -> dict[str, Any]:
         return yaml.safe_load(f)
 
 
-def grade_for_score(score: int, rules: dict[str, Any]) -> str:
-    thresholds = rules["grades"]
-    if score >= thresholds["S"]:
-        return "S"
-    if score >= thresholds["A"]:
-        return "A"
-    if score >= thresholds["B"]:
-        return "B"
-    if score >= thresholds["C"]:
-        return "C"
-    return "D"
-
-
 def _sum_flags(
-    flag_names: list[str], rule_section: dict[str, int], max_score: int
+    flag_names: list[str], dimension: str, rule_set: ScoringRuleSet
 ) -> tuple[int, list[str]]:
     total = 0
     reasons: list[str] = []
     for flag in flag_names:
-        points = int(rule_section.get(flag, 0))
+        points = rule_set.flag_score(dimension, flag)
         if points:
             total += points
             reasons.append(f"{flag} +{points}")
-    return min(total, max_score), reasons
+    return min(total, rule_set.max_score(dimension)), reasons
 
 
 def score_lead(
     input_data: LeadScoringInput, rules: dict[str, Any] | None = None
 ) -> LeadScoringResult:
-    rules = rules or load_scoring_rules()
-    max_scores = rules["max_scores"]
+    rule_set = ScoringRuleSet(data=rules)
 
     budget_strength = min(
-        int(rules["budget_strength"].get(input_data.signal_type, 0)),
-        int(max_scores["budget_strength"]),
+        rule_set.flag_score("budget_strength", input_data.signal_type),
+        rule_set.max_score("budget_strength"),
     )
     reasons = []
     if budget_strength:
         reasons.append(f"{input_data.signal_type} 预算强度 +{budget_strength}")
 
     scenario_fit, scenario_reasons = _sum_flags(
-        input_data.scenario_flags,
-        rules["scenario_fit"],
-        int(max_scores["scenario_fit"]),
+        input_data.scenario_flags, "scenario_fit", rule_set
     )
     timing, timing_reasons = _sum_flags(
-        input_data.timing_flags,
-        rules["timing"],
-        int(max_scores["timing"]),
+        input_data.timing_flags, "timing", rule_set
     )
     reachability, reachability_reasons = _sum_flags(
-        input_data.reachability_flags,
-        rules["reachability"],
-        int(max_scores["reachability"]),
+        input_data.reachability_flags, "reachability", rule_set
     )
     leverage, leverage_reasons = _sum_flags(
-        input_data.leverage_flags,
-        rules["leverage"],
-        int(max_scores["leverage"]),
+        input_data.leverage_flags, "leverage", rule_set
     )
 
     reasons.extend(scenario_reasons + timing_reasons + reachability_reasons + leverage_reasons)
@@ -81,7 +60,7 @@ def score_lead(
 
     return LeadScoringResult(
         total_score=total,
-        grade=grade_for_score(total, rules),
+        grade=rule_set.grade_for_total(total),
         breakdown={
             "budget_strength": budget_strength,
             "scenario_fit": scenario_fit,

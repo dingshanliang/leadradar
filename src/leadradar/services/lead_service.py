@@ -18,6 +18,7 @@ from leadradar.models import (
 )
 from leadradar.schemas import ExtractionResult, LeadScoringInput
 from leadradar.scoring import score_lead
+from leadradar.services.flag_derivation import default_engine
 
 
 # ── T-501: RawDocument → ExtractionRun → Signal ───────────────
@@ -109,7 +110,7 @@ def signal_to_scored_lead(
     signal.organization_id = org.id
     session.add(signal)
 
-    scoring_input = _derive_scoring_input(signal, extraction_result)
+    scoring_input = default_engine().derive(signal, extraction_result)
 
     lead = Lead(
         organization_id=org.id,
@@ -205,63 +206,6 @@ def _find_or_create_organization(
     session.commit()
     session.refresh(org)
     return org
-
-
-def _derive_scoring_input(signal: Signal, result: ExtractionResult | None) -> LeadScoringInput:
-    """Derive LeadScoringInput from Signal and ExtractionResult.
-
-    This is a simplified flag mapper for MVP. A more sophisticated
-    version can use keyword matching and date analysis later.
-    """
-    scenario_flags: list[str] = []
-    timing_flags: list[str] = []
-    reachability_flags: list[str] = []
-    leverage_flags: list[str] = []
-
-    if result:
-        # Scenario fit flags from customer_type and product_fit
-        if result.customer_type in ("region_brand_government", "region_brand_association"):
-            scenario_flags.append("region_brand_or_association")
-        if "食品" in (result.need_summary or "") or "预包装" in (result.need_summary or ""):
-            scenario_flags.append("prepackaged_food")
-        if "农产品" in (result.need_summary or "") or "农产品" in " ".join(result.matched_keywords):
-            scenario_flags.append("agri_product_brand")
-        if "包装" in (result.need_summary or ""):
-            scenario_flags.append("gift_box_or_packaged_product")
-        if any(k in " ".join(result.matched_keywords) for k in ("地理标志", "名特优新")):
-            scenario_flags.append("certification_or_gi")
-        if "二维码" in (result.need_summary or "") and "体验" in (result.need_summary or ""):
-            scenario_flags.append("poor_existing_qr")
-
-        # Timing flags from signal_type and expected_time
-        if result.signal_type == "procurement_intent":
-            timing_flags.append("procurement_expected_within_3_months")
-        elif result.signal_type == "tender_notice":
-            timing_flags.append("newly_published_tender")
-        elif result.signal_type == "winning_notice":
-            timing_flags.append("newly_won_project")
-
-        # Leverage flags from product_fit
-        if "区域品牌数字化管理包" in result.product_fit:
-            leverage_flags.append("multi_org_region_brand_project")
-        if any(p in result.product_fit for p in ("渠道白标工具包",)):
-            leverage_flags.append("packaging_or_printing_partner")
-
-    # Reachability: use evidence presence as proxy
-    if signal.evidence_text and "采购代理" in signal.evidence_text:
-        reachability_flags.append("agency_phone")
-    elif signal.evidence_text and "联系人" in signal.evidence_text:
-        reachability_flags.append("procurement_contact")
-    else:
-        reachability_flags.append("official_phone")
-
-    return LeadScoringInput(
-        signal_type=signal.signal_type,
-        scenario_flags=scenario_flags,
-        timing_flags=timing_flags,
-        reachability_flags=reachability_flags,
-        leverage_flags=leverage_flags,
-    )
 
 
 def _budget_bucket(amount: float | None) -> str | None:

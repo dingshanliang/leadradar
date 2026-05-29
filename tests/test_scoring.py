@@ -1,7 +1,8 @@
 import pytest
 
 from leadradar.schemas import LeadScoringInput
-from leadradar.scoring import grade_for_score, load_scoring_rules, score_lead
+from leadradar.scoring import load_scoring_rules, score_lead
+from leadradar.services.scoring_rule_set import ScoringRuleSet
 
 
 @pytest.fixture
@@ -154,15 +155,16 @@ def test_scenario_fit_capped_at_25(rules):
 
 
 def test_grade_for_score_exact_boundaries(rules):
-    assert grade_for_score(85, rules) == "S"
-    assert grade_for_score(84, rules) == "A"
-    assert grade_for_score(70, rules) == "A"
-    assert grade_for_score(69, rules) == "B"
-    assert grade_for_score(55, rules) == "B"
-    assert grade_for_score(54, rules) == "C"
-    assert grade_for_score(40, rules) == "C"
-    assert grade_for_score(39, rules) == "D"
-    assert grade_for_score(0, rules) == "D"
+    rs = ScoringRuleSet(data=rules)
+    assert rs.grade_for_total(85) == "S"
+    assert rs.grade_for_total(84) == "A"
+    assert rs.grade_for_total(70) == "A"
+    assert rs.grade_for_total(69) == "B"
+    assert rs.grade_for_total(55) == "B"
+    assert rs.grade_for_total(54) == "C"
+    assert rs.grade_for_total(40) == "C"
+    assert rs.grade_for_total(39) == "D"
+    assert rs.grade_for_total(0) == "D"
 
 
 # ── Empty flags ────────────────────────────────────────────────
