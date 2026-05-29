@@ -48,6 +48,7 @@ from leadradar.models import (
     Source,
 )
 from leadradar.services.call_script import generate_call_script as _gen_script
+from leadradar.services.config_service import ScoringRulesUpdate, update_scoring_rules
 
 router = APIRouter(prefix="/api/v1")
 
@@ -211,6 +212,17 @@ def get_config():
         scoring_dimensions=scoring_dimensions,
         product_packages=product_packages,
     )
+
+
+@router.put("/config/scoring")
+def put_scoring_config(payload: ScoringRulesUpdate):
+    try:
+        update_scoring_rules(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return {"ok": True}
 
 
 @router.get("/sources", response_model=list[SourceOut])
