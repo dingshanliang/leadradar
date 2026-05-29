@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import csv
-import io
 from datetime import datetime
 from pathlib import Path
 from typing import Literal
@@ -10,13 +8,11 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import Response
 from pydantic import BaseModel
-from openpyxl import Workbook
 from sqlmodel import Session, select
 
+from leadradar.adapters.export_adapters import CsvExportAdapter, XlsxExportAdapter
 from leadradar.api.schemas import (
-    CallScript,
     ConfigOut,
-    DistributionItem,
     DocumentOut,
     EnumItem,
     FollowUpCreate,
@@ -25,11 +21,8 @@ from leadradar.api.schemas import (
     LeadDetail,
     LeadListItem,
     MetaOut,
-    OrganizationBrief,
     ProductPackage,
-    ScoreBrief,
     ScoringDimension,
-    SignalBrief,
     SourceOut,
     StatsOut,
     StatusUpdate,
@@ -40,19 +33,19 @@ from leadradar.models import (
     SIGNAL_TYPE_LABELS,
     FollowUp,
     Lead,
-    LeadScore,
     LeadStatus,
     Organization,
     RawDocument,
-    Signal,
     Source,
 )
-from leadradar.services.call_script import generate_call_script as _gen_script
 from leadradar.services.config_service import (
     ScoringRulesUpdate,
     load_scoring_rules,
     update_scoring_rules,
 )
+from leadradar.services.lead_export_service import LeadExportService
+from leadradar.services.lead_query_service import LeadQueryService
+from leadradar.services.lead_stats_service import LeadStatsService
 
 router = APIRouter(prefix="/api/v1")
 
@@ -62,76 +55,12 @@ router = APIRouter(prefix="/api/v1")
 
 @router.get("/stats", response_model=StatsOut)
 def get_stats(session: Session = Depends(get_session)):
-    rows = session.exec(
-        select(Lead, LeadScore, Organization, Signal)
-        .join(LeadScore, LeadScore.lead_id == Lead.id)
-        .join(Organization, Organization.id == Lead.organization_id)
-        .outerjoin(Signal, Signal.id == Lead.primary_signal_id)
-    ).all()
-
-    total = len(rows)
-    sa_count = sum(1 for _, score, _, _ in rows if score.grade in ("S", "A"))
-    pending = sum(1 for lead, _, _, _ in rows if lead.lead_status.value in ("new", "qualified"))
-    scheduled = sum(1 for lead, _, _, _ in rows if lead.lead_status.value == "diagnosis_scheduled")
-    invalid = sum(1 for lead, _, _, _ in rows if lead.lead_status.value == "invalid")
-    invalid_rate = f"{(invalid / total * 100):.1f}" if total > 0 else "0"
-
-    def _distribution(key_fn):
-        counts: dict[str, int] = {}
-        for lead, _, org, signal in rows:
-            k = key_fn(lead, org, signal)
-            counts[k] = counts.get(k, 0) + 1
-        return [
-            DistributionItem(name=k, count=v)
-            for k, v in sorted(counts.items(), key=lambda x: -x[1])
-        ]
-
-    return StatsOut(
-        total=total,
-        sa_count=sa_count,
-        pending=pending,
-        scheduled=scheduled,
-        invalid=invalid,
-        invalid_rate=invalid_rate,
-        signal_type_distribution=_distribution(
-            lambda _, __, signal: signal.signal_type if signal else "unknown"
-        )[:8],
-        package_distribution=_distribution(
-            lambda lead, _, __: lead.recommended_package or "未分类"
-        ),
-        province_distribution=_distribution(lambda _, org, __: org.province or "未知")[:8],
-    )
+    return LeadStatsService().get_stats(session)
 
 
 @router.get("/weekly-report", response_model=WeeklyReport)
 def get_weekly_report(session: Session = Depends(get_session)):
-    from datetime import timedelta, timezone
-
-    one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
-
-    leads = session.exec(select(Lead).where(Lead.created_at >= one_week_ago)).all()
-
-    follow_ups = session.exec(select(FollowUp).where(FollowUp.created_at >= one_week_ago)).all()
-
-    new_leads = len(leads)
-    followed_up = len(follow_ups)
-    contacted = sum(1 for lead in leads if lead.lead_status.value in ("called", "connected"))
-    scheduled = sum(1 for lead in leads if lead.lead_status.value == "diagnosis_scheduled")
-    won = sum(1 for lead in leads if lead.lead_status.value == "won")
-    lost = sum(1 for lead in leads if lead.lead_status.value == "lost")
-
-    total_outcomes = won + lost
-    conversion_rate = f"{(won / total_outcomes * 100):.0f}%" if total_outcomes > 0 else "N/A"
-
-    return WeeklyReport(
-        new_leads=new_leads,
-        followed_up=followed_up,
-        contacted=contacted,
-        scheduled=scheduled,
-        won=won,
-        lost=lost,
-        conversion_rate=conversion_rate,
-    )
+    return LeadStatsService().get_weekly_report(session)
 
 
 # ── Sources ───────────────────────────────────────────────────────
@@ -261,43 +190,14 @@ def list_leads(
     offset: int = Query(default=0, ge=0),
     session: Session = Depends(get_session),
 ):
-    query = (
-        select(Lead, LeadScore, Organization, Signal)
-        .join(LeadScore, LeadScore.lead_id == Lead.id)
-        .join(Organization, Organization.id == Lead.organization_id)
-        .outerjoin(Signal, Signal.id == Lead.primary_signal_id)
-        .order_by(Lead.created_at.desc())
+    return LeadQueryService().list_leads(
+        session,
+        grade=grade,
+        status=status,
+        signal_type=signal_type,
+        limit=limit,
+        offset=offset,
     )
-    if grade:
-        query = query.where(LeadScore.grade == grade.upper())
-    if status:
-        query = query.where(Lead.lead_status == status)
-    if signal_type:
-        query = query.where(Signal.signal_type == signal_type)
-
-    query = query.offset(offset).limit(limit)
-    rows = session.exec(query).all()
-
-    results = []
-    for lead, score, org, signal in rows:
-        results.append(
-            LeadListItem(
-                id=lead.id,
-                organization_name=org.name,
-                customer_type=lead.customer_type,
-                recommended_package=lead.recommended_package,
-                budget_bucket=lead.budget_bucket,
-                signal_type=signal.signal_type if signal else None,
-                province=org.province,
-                lead_status=lead.lead_status.value
-                if isinstance(lead.lead_status, LeadStatus)
-                else lead.lead_status,
-                total_score=score.total_score,
-                grade=score.grade,
-                created_at=lead.created_at,
-            )
-        )
-    return results
 
 
 # ── Export (MUST be before /leads/{lead_id} to avoid path collision) ──
@@ -309,67 +209,16 @@ def export_leads(
     grade: str | None = None,
     session: Session = Depends(get_session),
 ):
-    query = (
-        select(Lead, LeadScore, Organization, Signal)
-        .join(LeadScore, LeadScore.lead_id == Lead.id)
-        .join(Organization, Organization.id == Lead.organization_id)
-        .outerjoin(Signal, Signal.id == Lead.primary_signal_id)
-    )
-    if grade:
-        query = query.where(LeadScore.grade == grade.upper())
-
-    rows = session.exec(query).all()
-
-    columns = [
-        "organization_name",
-        "lead_status",
-        "grade",
-        "total_score",
-        "customer_type",
-        "recommended_package",
-        "budget_bucket",
-        "signal_type",
-        "budget_amount",
-        "source_url",
-        "evidence_text",
-    ]
-
-    data_rows = []
-    for lead, score, org, signal in rows:
-        data_rows.append(
-            {
-                "organization_name": org.name,
-                "lead_status": lead.lead_status.value
-                if isinstance(lead.lead_status, LeadStatus)
-                else lead.lead_status,
-                "grade": score.grade,
-                "total_score": score.total_score,
-                "customer_type": lead.customer_type or "",
-                "recommended_package": lead.recommended_package or "",
-                "budget_bucket": lead.budget_bucket or "",
-                "signal_type": signal.signal_type if signal else "",
-                "budget_amount": signal.budget_amount if signal else "",
-                "source_url": signal.source_url if signal else "",
-                "evidence_text": signal.evidence_text if signal else "",
-            }
-        )
+    rows = LeadExportService().build_export_rows(session, grade=grade)
 
     if format == "csv":
-        buf = io.StringIO()
-        writer = csv.DictWriter(buf, fieldnames=columns)
-        writer.writeheader()
-        writer.writerows(data_rows)
-        return _csv_response(buf.getvalue(), "leads.csv")
+        adapter = CsvExportAdapter()
+        content = adapter.render(rows)
+        return _csv_response(content, adapter.filename())
     else:
-        wb = Workbook()
-        ws = wb.active
-        ws.title = "线索列表"
-        ws.append(columns)
-        for row in data_rows:
-            ws.append([row[c] for c in columns])
-        buf = io.BytesIO()
-        wb.save(buf)
-        return _xlsx_response(buf.getvalue(), "leads.xlsx")
+        adapter = XlsxExportAdapter()
+        content = adapter.render(rows)
+        return _xlsx_response(content, adapter.filename())
 
 
 # ── Lead Detail ───────────────────────────────────────────────────
@@ -377,68 +226,10 @@ def export_leads(
 
 @router.get("/leads/{lead_id}", response_model=LeadDetail)
 def get_lead_detail(lead_id: UUID, session: Session = Depends(get_session)):
-    lead = session.get(Lead, lead_id)
-    if not lead:
+    detail = LeadQueryService().get_lead_detail(session, lead_id)
+    if detail is None:
         raise HTTPException(status_code=404, detail="Lead not found")
-
-    score = session.exec(select(LeadScore).where(LeadScore.lead_id == lead_id)).first()
-
-    org = session.get(Organization, lead.organization_id) if lead.organization_id else None
-
-    signal = session.get(Signal, lead.primary_signal_id) if lead.primary_signal_id else None
-
-    if not score or not org or not signal:
-        raise HTTPException(status_code=404, detail="Incomplete lead data")
-
-    script_data = _gen_script(
-        customer_type=lead.customer_type,
-        organization_name=org.name,
-        signal_title=signal.title,
-        signal_type=signal.signal_type,
-        recommended_package=lead.recommended_package,
-        budget_amount=signal.budget_amount,
-    )
-
-    return LeadDetail(
-        id=lead.id,
-        organization=OrganizationBrief(
-            id=org.id,
-            name=org.name,
-            province=org.province,
-            city=org.city,
-            county=org.county,
-            organization_type=org.organization_type,
-        ),
-        signal=SignalBrief(
-            id=signal.id,
-            signal_type=signal.signal_type,
-            title=signal.title,
-            budget_amount=signal.budget_amount,
-            source_url=signal.source_url,
-            evidence_text=signal.evidence_text,
-            confidence=signal.confidence,
-            created_at=signal.created_at,
-        ),
-        score=ScoreBrief(
-            total_score=score.total_score,
-            grade=score.grade,
-            budget_strength_score=score.budget_strength_score,
-            scenario_fit_score=score.scenario_fit_score,
-            timing_score=score.timing_score,
-            reachability_score=score.reachability_score,
-            leverage_score=score.leverage_score,
-        ),
-        call_script=CallScript(**script_data),
-        customer_type=lead.customer_type,
-        recommended_package=lead.recommended_package,
-        budget_bucket=lead.budget_bucket,
-        lead_status=lead.lead_status.value
-        if isinstance(lead.lead_status, LeadStatus)
-        else lead.lead_status,
-        owner=lead.owner,
-        created_at=lead.created_at,
-        updated_at=lead.updated_at,
-    )
+    return detail
 
 
 # ── Lead Status Update ───────────────────────────────────────────
