@@ -4,7 +4,8 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 /**
  * Server-side fetch helper for calling the backend API from Server Components.
- * Forwards cookies from the incoming request for authentication.
+ * NOTE: Currently no auth — only safe for public endpoints (e.g. /api/v1/stats).
+ * When auth is required, switch to httpOnly cookies or make the page a Client Component.
  */
 async function serverFetch<T>(path: string): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {

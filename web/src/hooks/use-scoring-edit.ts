@@ -116,24 +116,28 @@ export function useScoringEdit() {
   }, [editedData, isValid, mutate]);
 
   const updateMaxScore = useCallback((dim: string, value: string) => {
+    const num = Number(value);
+    if (isNaN(num)) return;
     setEditedData((prev) => {
       if (!prev) return prev;
       const next = { ...prev };
       next.max_scores = {
         ...(next.max_scores as Record<string, number>),
-        [dim]: Number(value) || 0,
+        [dim]: num,
       };
       return next;
     });
   }, []);
 
   const updateGrade = useCallback((grade: string, value: string) => {
+    const num = Number(value);
+    if (isNaN(num)) return;
     setEditedData((prev) => {
       if (!prev) return prev;
       const next = { ...prev };
       next.grades = {
         ...(next.grades as Record<string, number>),
-        [grade]: Number(value) || 0,
+        [grade]: num,
       };
       return next;
     });
@@ -141,12 +145,14 @@ export function useScoringEdit() {
 
   const updateSubScore = useCallback(
     (dim: string, key: string, value: string) => {
+      const num = Number(value);
+      if (isNaN(num)) return;
       setEditedData((prev) => {
         if (!prev) return prev;
         const next = { ...prev };
         next[dim] = {
           ...(next[dim] as Record<string, number>),
-          [key]: Number(value) || 0,
+          [key]: num,
         };
         return next;
       });

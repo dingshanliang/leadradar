@@ -146,6 +146,12 @@ export async function exportLeads(
   URL.revokeObjectURL(url);
 }
 
+// ── Weekly Report ──────────────────────────────────────────────
+
+export async function getWeeklyReport(): Promise<Record<string, unknown>> {
+  return apiFetch("/api/v1/weekly-report");
+}
+
 // ── Follow-ups ─────────────────────────────────────────────────
 
 export async function createFollowUp(

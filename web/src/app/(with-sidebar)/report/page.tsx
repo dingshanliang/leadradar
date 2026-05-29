@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { MetricCard } from "@/components/dashboard/metric-card";
+import { getWeeklyReport } from "@/lib/api-client";
 
 interface WeeklyData {
   new_leads: number;
@@ -17,10 +18,7 @@ interface WeeklyData {
 }
 
 async function fetchWeekly(): Promise<WeeklyData> {
-  const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-  const res = await fetch(`${base}/api/v1/weekly-report`);
-  if (!res.ok) throw new Error("Failed to fetch weekly report");
-  return res.json();
+  return getWeeklyReport() as unknown as WeeklyData;
 }
 
 export default function ReportPage() {
