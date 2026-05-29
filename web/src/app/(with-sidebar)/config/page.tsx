@@ -15,6 +15,16 @@ const TABS = [
   { key: "scripts", label: "话术模板" },
 ];
 
+const DIM_NAMES: Record<string, string> = {
+  budget_strength: "预算强度",
+  scenario_fit: "场景匹配",
+  timing: "时间窗口",
+  reachability: "可触达性",
+  leverage: "成交杠杆",
+};
+
+const GRADE_ORDER = ["S", "A", "B", "C", "D"];
+
 export default function ConfigPage() {
   const [activeTab, setActiveTab] = useState("sources");
   const { data: sources, isLoading: sourcesLoading } = useSWR<Source[]>(
@@ -40,16 +50,6 @@ export default function ConfigPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  const dimNames: Record<string, string> = {
-    budget_strength: "预算强度",
-    scenario_fit: "场景匹配",
-    timing: "时间窗口",
-    reachability: "可触达性",
-    leverage: "成交杠杆",
-  };
-
-  const gradeOrder = ["S", "A", "B", "C", "D"];
-
   const validationErrors = useMemo(() => {
     const errors: string[] = [];
     if (!editedScoring) return errors;
@@ -64,10 +64,10 @@ export default function ConfigPage() {
 
     const grades = editedScoring.grades as Record<string, number> | undefined;
     if (grades) {
-      const values = gradeOrder.map((g) => Number(grades[g]) || 0);
+      const values = GRADE_ORDER.map((g) => Number(grades[g]) || 0);
       for (let i = 0; i < values.length - 1; i++) {
         if (values[i] <= values[i + 1]) {
-          errors.push(`等级阈值必须严格递减: ${gradeOrder[i]}(${values[i]}) 应大于 ${gradeOrder[i + 1]}(${values[i + 1]})`);
+          errors.push(`等级阈值必须严格递减: ${GRADE_ORDER[i]}(${values[i]}) 应大于 ${GRADE_ORDER[i + 1]}(${values[i + 1]})`);
         }
       }
     }
@@ -79,7 +79,7 @@ export default function ConfigPage() {
       if (subScores && maxVal !== undefined) {
         for (const [key, val] of Object.entries(subScores)) {
           if (Number(val) > Number(maxVal)) {
-            errors.push(`${dimNames[dim] || dim}.${key} 的分值 ${val} 超过了该维度满分 ${maxVal}`);
+            errors.push(`${DIM_NAMES[dim] || dim}.${key} 的分值 ${val} 超过了该维度满分 ${maxVal}`);
           }
         }
       }
@@ -290,7 +290,7 @@ export default function ConfigPage() {
                       ([key, val]) => (
                         <div key={key} className="flex items-center gap-4">
                           <div className="w-24">
-                            <p className="text-sm text-foreground">{dimNames[key] || key}</p>
+                            <p className="text-sm text-foreground">{DIM_NAMES[key] || key}</p>
                           </div>
                           {isEditingScoring && editedScoring ? (
                             <input
@@ -345,7 +345,7 @@ export default function ConfigPage() {
               {/* Grades */}
               <Card title="等级阈值">
                 <div className="flex gap-4">
-                  {gradeOrder.map((g) => {
+                  {GRADE_ORDER.map((g) => {
                     const grades = isEditingScoring && editedScoring
                       ? (editedScoring.grades as Record<string, number>)
                       : (scoringConfig?.grades as Record<string, number>);
@@ -389,7 +389,7 @@ export default function ConfigPage() {
                             ? "≥" + value
                             : g === "D"
                             ? "<" + (grades?.["C"] ?? 40)
-                            : `${value}–${(grades?.[gradeOrder[gradeOrder.indexOf(g) - 1]] ?? 100) - 1}`}
+                            : `${value}–${(grades?.[GRADE_ORDER[GRADE_ORDER.indexOf(g) - 1]] ?? 100) - 1}`}
                         </p>
                       </div>
                     );
@@ -410,7 +410,7 @@ export default function ConfigPage() {
                   : (scoringConfig?.[dim] as Record<string, number>);
                 if (!subScores) return null;
                 return (
-                  <Card key={dim} title={dimNames[dim] || dim}>
+                  <Card key={dim} title={DIM_NAMES[dim] || dim}>
                     <div className="space-y-2">
                       {Object.entries(subScores).map(([key, val]) => (
                         <div key={key} className="flex items-center justify-between">

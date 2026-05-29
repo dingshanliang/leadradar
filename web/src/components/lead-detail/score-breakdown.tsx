@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { GradeBadge } from "@/components/leads/grade-badge";
-import type { ScoreBrief } from "@/lib/types";
+import type { Grade, ScoreBrief } from "@/lib/types";
 
 interface ScoreBreakdownProps {
   score: ScoreBrief;
@@ -21,7 +21,7 @@ export function ScoreBreakdown({ score }: ScoreBreakdownProps) {
         <span className="font-mono text-3xl font-bold text-primary">
           {score.total_score}
         </span>
-        <GradeBadge grade={score.grade as any} />
+        <GradeBadge grade={score.grade as Grade} />
       </div>
       <div className="space-y-3">
         {DIMENSIONS.map((dim) => {

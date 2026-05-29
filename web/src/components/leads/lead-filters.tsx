@@ -1,6 +1,6 @@
 "use client";
 
-import { GRADE_COLORS, STATUS_LABELS as FALLBACK_STATUS, SIGNAL_TYPE_LABELS as FALLBACK_SIGNAL } from "@/lib/constants";
+import { GRADE_COLORS, STATUS_LABELS as FALLBACK_STATUS } from "@/lib/constants";
 import { useMeta } from "@/hooks/use-meta";
 import type { Grade, LeadFilters, LeadStatus } from "@/lib/types";
 

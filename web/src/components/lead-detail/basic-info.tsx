@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/leads/status-badge";
 import { formatDate } from "@/lib/utils";
-import type { OrganizationBrief, LeadDetail } from "@/lib/types";
+import type { LeadDetail } from "@/lib/types";
 
 interface BasicInfoProps {
   lead: LeadDetail;

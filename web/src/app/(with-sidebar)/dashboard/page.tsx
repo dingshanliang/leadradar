@@ -70,7 +70,7 @@ export default function DashboardPage() {
                       innerRadius={40}
                       outerRadius={80}
                       dataKey="count"
-                      label={({ name, percent }: any) => `${name ?? ""} ${((percent ?? 0) * 100).toFixed(0)}%`}
+                      label={({ name, percent }: { name?: string; percent?: number }) => `${name ?? ""} ${((percent ?? 0) * 100).toFixed(0)}%`}
                       labelLine={false}
                     >
                       {stats.package_distribution.map((_, i) => (

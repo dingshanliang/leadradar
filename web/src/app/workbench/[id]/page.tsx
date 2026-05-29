@@ -4,16 +4,15 @@ import { useParams, useRouter } from "next/navigation";
 import { useState, useCallback } from "react";
 import useSWR from "swr";
 import { getLeadDetail, createFollowUp, updateLeadStatus, listFollowUps } from "@/lib/api-client";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CopyButton } from "@/components/ui/copy-button";
 import { GradeBadge } from "@/components/leads/grade-badge";
 import { StatusBadge } from "@/components/leads/status-badge";
-import { CALL_RESULTS, SIGNAL_TYPE_LABELS as FALLBACK_SIGNAL } from "@/lib/constants";
+import { CALL_RESULTS } from "@/lib/constants";
 import { useMeta } from "@/hooks/use-meta";
 import { FollowUpHistory } from "@/components/lead-detail/follow-up-history";
-import { formatBudget, formatDate } from "@/lib/utils";
-import type { FollowUpOut, LeadDetail } from "@/lib/types";
+import { formatBudget } from "@/lib/utils";
+import type { FollowUpOut, Grade, LeadDetail } from "@/lib/types";
 
 export default function WorkbenchPage() {
   const params = useParams();
@@ -88,7 +87,7 @@ export default function WorkbenchPage() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <h2 className="font-heading text-lg font-bold text-primary">{org.name}</h2>
-              <GradeBadge grade={lead.score.grade as any} />
+              <GradeBadge grade={lead.score.grade as Grade} />
             </div>
             <StatusBadge status={lead.lead_status} />
           </div>
