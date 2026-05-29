@@ -11,22 +11,15 @@ import type {
   Stats,
 } from "./types";
 import {
-  leadStatusUpdateSchema,
   followUpCreateSchema,
+  leadStatusUpdateSchema,
   scoringRulesUpdateSchema,
 } from "./schemas";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import { ApiError, fetchJson } from "./fetch-utils";
 
 function getAuthToken(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem("token");
-}
-
-function buildAuthHeaders(): Record<string, string> {
-  const token = getAuthToken();
-  if (!token) return {};
-  return { Authorization: `Bearer ${token}` };
 }
 
 function handleUnauthorized(): void {
@@ -37,24 +30,14 @@ function handleUnauthorized(): void {
 }
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const { headers: customHeaders, ...rest } = options ?? {};
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...rest,
-    headers: {
-      "Content-Type": "application/json",
-      ...buildAuthHeaders(),
-      ...customHeaders,
-    },
-  });
-  if (res.status === 401) {
-    handleUnauthorized();
-    throw new Error("Unauthorized");
+  try {
+    return await fetchJson<T>(path, { ...options, authToken: getAuthToken() });
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 401) {
+      handleUnauthorized();
+    }
+    throw e;
   }
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(error.detail || `API Error: ${res.status}`);
-  }
-  return res.json();
 }
 
 // ── Health ─────────────────────────────────────────────────────
@@ -146,8 +129,8 @@ export async function exportLeads(
 ): Promise<void> {
   const params = new URLSearchParams({ format });
   if (grade) params.set("grade", grade);
-  const res = await fetch(`${API_BASE}/api/v1/leads/export?${params}`, {
-    headers: buildAuthHeaders(),
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/leads/export?${params}`, {
+    headers: getAuthToken() ? { Authorization: `Bearer ${getAuthToken()}` } : {},
   });
   if (res.status === 401) {
     handleUnauthorized();
@@ -163,7 +146,7 @@ export async function exportLeads(
   URL.revokeObjectURL(url);
 }
 
-// ── Weekly Report ──────────────────────────────────────────────
+// ── Weekly Report ─────────────────────────────
 
 export async function getWeeklyReport(): Promise<Record<string, unknown>> {
   return apiFetch("/api/v1/weekly-report");

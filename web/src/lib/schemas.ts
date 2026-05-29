@@ -156,3 +156,11 @@ export function validateLeadStatus(status: string) {
 export function validateFollowUpCreate(data: unknown) {
   return followUpCreateSchema.safeParse(data);
 }
+
+// ── TypeScript union types derived from zod constants ────────────
+
+/** Strict union of all valid lead-status values. */
+export type LeadStatus = (typeof LEAD_STATUSES)[number];
+
+/** Strict union of all valid grade values. */
+export type Grade = (typeof GRADE_KEYS)[number];

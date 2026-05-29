@@ -1,4 +1,4 @@
-import type { Grade, LeadStatus } from "./types";
+import type { Grade, LeadStatus } from "./schemas";
 
 export const GRADE_COLORS: Record<Grade, string> = {
   S: "bg-emerald-100 text-emerald-800",
