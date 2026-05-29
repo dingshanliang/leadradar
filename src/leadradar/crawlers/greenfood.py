@@ -21,6 +21,7 @@ import httpx
 from bs4 import BeautifulSoup
 
 from leadradar.crawlers.base import FetchProvider, RawPage, SearchProvider, SearchResult
+from leadradar.crawlers.registry import register as _register
 
 _BASE_URL = "http://www.greenfood.agri.cn"
 _LIST_URL = f"{_BASE_URL}/cpgg/lsspgg/"
@@ -168,3 +169,8 @@ def _has_next_page(html: str) -> bool:
         if text == "下一页":
             return True
     return False
+
+
+# ── registry ─────────────────────────────────────────────────────
+
+_register("greenfood", GreenFoodSearchProvider, GreenFoodFetchProvider)

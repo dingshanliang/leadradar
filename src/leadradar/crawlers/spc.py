@@ -19,6 +19,7 @@ from urllib.parse import urljoin
 import httpx
 
 from leadradar.crawlers.base import FetchProvider, RawPage, SearchProvider, SearchResult
+from leadradar.crawlers.registry import register as _register
 
 _BASE_URL = "https://spcjsac.gsxt.gov.cn"
 _SEARCH_API = f"{_BASE_URL}/pjgcx/cjPubInfo/getJgcxList"
@@ -147,3 +148,8 @@ def _record_to_search_result(rec: dict) -> SearchResult:
         snippet=snippet,
         published_at=published_at,
     )
+
+
+# ── registry ─────────────────────────────────────────────────────
+
+_register("spc", SPCSearchProvider, SPCFetchProvider)

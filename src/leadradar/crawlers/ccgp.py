@@ -13,6 +13,7 @@ import httpx
 from bs4 import BeautifulSoup
 
 from leadradar.crawlers.base import FetchProvider, RawPage, SearchProvider, SearchResult
+from leadradar.crawlers.registry import register as _register
 
 _BASE_SEARCH_URL = "https://search.ccgp.gov.cn/bxsearch"
 _DEFAULT_HEADERS = {
@@ -113,3 +114,8 @@ def _parse_search_results(html: str) -> list[SearchResult]:
         )
 
     return results
+
+
+# ── registry ─────────────────────────────────────────────────────
+
+_register("ccgp", CCGPSearchProvider, CCGPFetchProvider)

@@ -13,6 +13,7 @@ from urllib.parse import urljoin
 import httpx
 
 from leadradar.crawlers.base import FetchProvider, RawPage, SearchProvider, SearchResult
+from leadradar.crawlers.registry import register as _register
 
 _BASE_URL = "https://www.ggzy.gov.cn"
 _SEARCH_API = f"{_BASE_URL}/information/pubTradingInfo/getTradList"
@@ -185,3 +186,8 @@ def _record_to_search_result(rec: dict) -> SearchResult:
         snippet=snippet,
         published_at=rec.get("publishTime"),
     )
+
+
+# ── registry ─────────────────────────────────────────────────────
+
+_register("ggzy", GGZYSearchProvider, GGZYFetchProvider)

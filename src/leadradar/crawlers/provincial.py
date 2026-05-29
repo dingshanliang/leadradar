@@ -23,6 +23,7 @@ from urllib.parse import urljoin
 import httpx
 
 from leadradar.crawlers.base import FetchProvider, RawPage, SearchProvider, SearchResult
+from leadradar.crawlers.registry import register as _register
 
 _DEFAULT_HEADERS = {
     "User-Agent": "LeadRadarBot/0.1 (+https://github.com/leadradar)",
@@ -361,3 +362,24 @@ def _build_gpcms_headers(params: dict) -> dict:
         "sign": sign,
         "requestSource": "qwjs",
     }
+
+
+# ── factory + registry ───────────────────────────────────────────
+
+
+class ProvincialFactory:
+    """Factory that binds a province name to Provincial providers."""
+
+    def __init__(self, province: str) -> None:
+        self._province = province
+
+    def search(self, **kwargs) -> ProvincialSearchProvider:
+        return ProvincialSearchProvider(self._province, **kwargs)
+
+    def fetch(self, **kwargs) -> ProvincialFetchProvider:
+        return ProvincialFetchProvider(self._province, **kwargs)
+
+
+for _prov in PROVINCES:
+    _factory = ProvincialFactory(_prov)
+    _register(_prov, _factory.search, _factory.fetch)

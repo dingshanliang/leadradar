@@ -19,6 +19,7 @@ from urllib.parse import urljoin
 import httpx
 
 from leadradar.crawlers.base import FetchProvider, RawPage, SearchProvider, SearchResult
+from leadradar.crawlers.registry import register as _register
 
 _BASE_URL = "https://www.plap.mil.cn"
 _PAGE_BASE = f"{_BASE_URL}/freecms-glht"
@@ -151,3 +152,8 @@ def _build_detail_url(htmlpath: str | None) -> str:
     if htmlpath.startswith("http"):
         return htmlpath
     return f"{_PAGE_BASE}{htmlpath}"
+
+
+# ── registry ─────────────────────────────────────────────────────
+
+_register("plap", PLAPSearchProvider, PLAPFetchProvider)

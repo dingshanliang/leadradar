@@ -20,6 +20,7 @@ from urllib.parse import urljoin
 import httpx
 
 from leadradar.crawlers.base import FetchProvider, RawPage, SearchProvider, SearchResult
+from leadradar.crawlers.registry import register as _register
 
 _BASE_URL = "https://www.zycg.gov.cn"
 _SEARCH_API = f"{_BASE_URL}/freecms/rest/v1/notice/searchAll.do"
@@ -139,3 +140,8 @@ def _record_to_search_result(rec: dict) -> SearchResult:
 def _clean_title_highlight(title: str) -> str:
     """Remove <em> highlight tags from search result titles."""
     return re.sub(r"</?em>", "", title)
+
+
+# ── registry ─────────────────────────────────────────────────────
+
+_register("zycg", ZYCGSearchProvider, ZYCGFetchProvider)

@@ -20,6 +20,7 @@ import httpx
 from bs4 import BeautifulSoup, Tag
 
 from leadradar.crawlers.base import FetchProvider, RawPage, SearchProvider, SearchResult
+from leadradar.crawlers.registry import register as _register
 
 _BASE_URL = "http://mtyx.aqsc.org"
 _SEARCH_URL = f"{_BASE_URL}/Home/Minglu/index.html"
@@ -169,3 +170,8 @@ def _extract_total(soup: BeautifulSoup) -> int:
             return int(match.group(1))
 
     return 0
+
+
+# ── registry ─────────────────────────────────────────────────────
+
+_register("aqsc_mtyx", AQSCSearchProvider, AQSCFetchProvider)
