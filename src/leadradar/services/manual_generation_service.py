@@ -36,6 +36,9 @@ class ManualGenerationService:
         """Create a ManualTask and its subtasks, but do not run them."""
         from leadradar.crawlers.registry import list_sources
 
+        if not source_keys:
+            raise ValueError("source_keys must not be empty")
+
         available = set(list_sources())
         invalid = set(source_keys) - available
         if invalid:
