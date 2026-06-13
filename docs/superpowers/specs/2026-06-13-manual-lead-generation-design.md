@@ -52,6 +52,7 @@ LeadRadar 已具备自动采集流水线（crawl → extract → score → lead�
 | `id` | UUID | 主键 |
 | `manual_task_id` | FK → manual_task.id | 所属父任务 |
 | `source_key` | str | 渠道注册表键名（如 `ccgp`），用于 `get_providers()` |
+| `source_id` | UUID | 对应 `Source.id`，用于写入 `RawDocument.source_id` |
 | `query` | str | 实际搜索语句 |
 | `keyword_group` | str | 关键词组名 |
 | `keyword` | str \| None | 当 `keyword_mode=by_keyword` 时使用 |
