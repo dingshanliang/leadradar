@@ -124,6 +124,20 @@ class OpenAICompatibleLLMProvider(LLMProvider):
         return result
 
 
+def get_llm_provider() -> LLMProvider:
+    """Return an LLM provider based on application settings."""
+    from leadradar.config import get_settings
+
+    settings = get_settings()
+    if settings.llm_provider == "openai_compatible" and settings.llm_api_key:
+        return OpenAICompatibleLLMProvider(
+            api_key=settings.llm_api_key,
+            base_url=settings.llm_base_url,
+            model=settings.llm_model,
+        )
+    return MockLLMProvider()
+
+
 _CONFIDENCE_FLOOR = 0.3
 _CONFIDENCE_PENALTY = 0.15
 _PHONE_PATTERN = re.compile(r"1[3-9]\d{9}")
