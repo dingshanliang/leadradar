@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from leadradar.api.auth_routes import router as auth_router
+from leadradar.api.manual_generation_routes import router as manual_generation_router
 from leadradar.api.routes import router
 from leadradar.config import get_settings
 from leadradar.services.lead_service import generate_call_opening, score_demo_lead
@@ -21,6 +22,7 @@ app.add_middleware(
 
 app.include_router(router)
 app.include_router(auth_router)
+app.include_router(manual_generation_router)
 
 
 @app.get("/health")
