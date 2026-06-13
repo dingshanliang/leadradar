@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useCallback } from "react";
 import { LeadTable } from "@/components/leads/lead-table";
 import { LeadFiltersBar } from "@/components/leads/lead-filters";
@@ -49,10 +50,18 @@ export default function LeadPoolPage() {
             ))}
           </div>
         ) : leads.length === 0 ? (
-          <EmptyState
-            title="暂无线索"
-            description="开始采集数据后，线索会出现在这里"
-          />
+          <>
+            <EmptyState
+              title="暂无线索"
+              description="开始采集数据后，线索会出现在这里"
+            />
+            <Link
+              href="/manual-tasks"
+              className="inline-block mt-4 text-sm text-primary hover:underline"
+            >
+              去手动生成线索 →
+            </Link>
+          </>
         ) : (
           <>
             <LeadTable
