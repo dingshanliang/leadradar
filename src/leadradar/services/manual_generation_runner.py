@@ -37,9 +37,7 @@ async def run_subtask(
         await crawler.crawl(subtask.query, source_id=subtask.source_id)
 
         docs = session.exec(
-            select(RawDocument)
-            .where(RawDocument.source_id == subtask.source_id)
-            .order_by(RawDocument.fetched_at.desc())
+            select(RawDocument).where(RawDocument.source_id == subtask.source_id)
         ).all()
 
         created = 0

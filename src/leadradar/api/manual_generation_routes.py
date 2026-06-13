@@ -44,9 +44,8 @@ def list_manual_tasks(
     limit: int = 20,
     session: Session = Depends(get_session),
 ) -> list[ManualTaskOut]:
-    tasks = session.exec(
-        select(ManualTask).order_by(ManualTask.created_at.desc()).limit(limit)
-    ).all()
+    tasks = list(session.exec(select(ManualTask).limit(limit)).all())
+    tasks.sort(key=lambda t: t.created_at or t.id, reverse=True)
     return [_task_to_out(t, subtasks=_load_subtasks(t.id, session)) for t in tasks]
 
 
@@ -59,9 +58,11 @@ def get_manual_task(task_id: UUID, session: Session = Depends(get_session)) -> M
 
 
 def _load_subtasks(task_id: UUID, session: Session) -> list[ManualSubtask]:
-    return session.exec(
-        select(ManualSubtask).where(ManualSubtask.manual_task_id == task_id)
-    ).all()
+    return list(
+        session.exec(
+            select(ManualSubtask).where(ManualSubtask.manual_task_id == task_id)
+        ).all()
+    )
 
 
 def _task_to_out(task: ManualTask, subtasks: list[ManualSubtask]) -> ManualTaskOut:
