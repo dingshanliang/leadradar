@@ -38,6 +38,9 @@ playwright-report/
 # Output
 outputs/
 
+# Worktrees
+.worktrees/
+
 # Claude Code session data
 .claude/
 .playwright-mcp/
