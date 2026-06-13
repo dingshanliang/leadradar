@@ -24,6 +24,9 @@ export type AppConfig = components["schemas"]["ConfigOut"];
 export type KeywordGroup = components["schemas"]["KeywordGroup"];
 export type ScoringDimension = components["schemas"]["ScoringDimension"];
 export type ProductPackage = components["schemas"]["ProductPackage"];
+export type ManualTaskCreate = components["schemas"]["ManualTaskCreate"];
+export type ManualTaskOut = components["schemas"]["ManualTaskOut"];
+export type ManualSubtaskOut = components["schemas"]["ManualSubtaskOut"];
 
 // ── filter / query types (not in OpenAPI schemas) ────────────────
 
