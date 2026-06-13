@@ -95,12 +95,12 @@ LeadRadar 已具备自动采集流水线（crawl → extract → score → lead�
 
 1. 校验 `source_ids` 非空且全部存在、启用。
 2. 读取 `data/keywords.yml`，根据 `keyword_mode` 展开查询列表：
-   - `by_group`：每个 `keyword_groups` 的 key 作为一个查询，查询内容可拼接组内关键词或仅用组名（实现时决定）。
-   - `by_keyword`：每个组内每个关键词单独作为一个查询。
+   - `by_group`：每个 `keyword_groups` 的 key 作为一个查询，查询语句为组内所有关键词用空格拼接（如 `区域公用品牌 农产品区域品牌 农产品品牌建设`）。
+   - `by_keyword`：每个组内每个关键词单独作为一个查询语句。
 3. 创建 `ManualTask`（`pending`）。
 4. 为每个 `source_id × query` 创建 `ManualSubtask`（`pending`）。
 5. 立即返回任务摘要（含 `task_id`）。
-6. 通过 `BackgroundTasks` 或等效机制启动 `ManualGenerationRunner`。
+6. 通过 FastAPI `BackgroundTasks` 启动 `ManualGenerationRunner`。
 
 ### 子任务执行流程
 
