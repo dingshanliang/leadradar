@@ -39,13 +39,19 @@ LeadRadar 已具备自动采集流水线（crawl → extract → score → lead�
 | `started_at` | datetime \| None | 开始时间 |
 | `finished_at` | datetime \| None | 结束时间 |
 
+### `Source` 扩展
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `source_key` | str \| None | 注册表键名，如 `ccgp`、`ggzy`；手动生成功能要求该字段有值 |
+
 ### `ManualSubtask`（子任务）
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
 | `id` | UUID | 主键 |
 | `manual_task_id` | FK → manual_task.id | 所属父任务 |
-| `source_id` | FK → source.id | 渠道 |
+| `source_key` | str | 渠道注册表键名（如 `ccgp`），用于 `get_providers()` |
 | `query` | str | 实际搜索语句 |
 | `keyword_group` | str | 关键词组名 |
 | `keyword` | str \| None | 当 `keyword_mode=by_keyword` 时使用 |
@@ -86,21 +92,21 @@ LeadRadar 已具备自动采集流水线（crawl → extract → score → lead�
 
 ```json
 {
-  "source_ids": ["uuid-1", "uuid-2"],
+  "source_keys": ["ccgp", "ggzy"],
   "keyword_mode": "by_group"
 }
 ```
 
 ### 后端行为
 
-1. 校验 `source_ids` 非空且全部存在、启用。
+1. 校验 `source_keys` 非空且全部对应已注册的采集器（`get_providers(source_key)` 可用）。
 2. 读取 `data/keywords.yml`，根据 `keyword_mode` 展开查询列表：
    - `by_group`：每个 `keyword_groups` 的 key 作为一个查询，查询语句为组内所有关键词用空格拼接（如 `区域公用品牌 农产品区域品牌 农产品品牌建设`）。
    - `by_keyword`：每个组内每个关键词单独作为一个查询语句。
 3. 创建 `ManualTask`（`pending`）。
-4. 为每个 `source_id × query` 创建 `ManualSubtask`（`pending`）。
+4. 为每个 `source_key × query` 创建 `ManualSubtask`（`pending`）。
 5. 立即返回任务摘要（含 `task_id`）。
-6. 通过 FastAPI `BackgroundTasks` 启动 `ManualGenerationRunner`。
+6. 通过 FastAPI `BackgroundTasks` 启动 `ManualGenerationRunner`，后台任务使用独立的数据库 session。
 
 ### 子任务执行流程
 
@@ -142,7 +148,7 @@ ManualSubtask.run()
    - 副标题：选择渠道和关键词模式，立即采集并生成线索
 
 2. **生成表单区**
-   - **渠道选择**：多选卡片/复选框，列出 `enabled=true` 的 `Source`。
+   - **渠道选择**：多选卡片/复选框，列出 `enabled=true` 的 `Source`；选中值使用 `source_key`。
    - **关键词模式**：
      - 按关键词组生成（默认）
      - 按关键词生成
