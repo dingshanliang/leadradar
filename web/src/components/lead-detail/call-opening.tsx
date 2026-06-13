@@ -39,7 +39,7 @@ export function CallOpening({ script }: CallOpeningProps) {
         {/* WeChat follow-up */}
         <div>
           <p className="text-xs text-muted mb-2">微信跟进话术</p>
-          <div className="flex items-start justify-between gap-3 p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-start justify-between gap-3 p-3 bg-bg-muted rounded-lg">
             <p className="text-sm text-foreground">{script.wechat_follow_up}</p>
             <CopyButton text={script.wechat_follow_up} />
           </div>

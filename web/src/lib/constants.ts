@@ -1,19 +1,19 @@
 import type { Grade, LeadStatus } from "./schemas";
 
 export const GRADE_COLORS: Record<Grade, string> = {
-  S: "bg-emerald-100 text-emerald-800",
-  A: "bg-sky-100 text-sky-800",
-  B: "bg-amber-100 text-amber-800",
-  C: "bg-orange-100 text-orange-800",
-  D: "bg-gray-100 text-gray-600",
+  S: "bg-success/15 text-success",
+  A: "bg-cta/15 text-cta",
+  B: "bg-warning/15 text-warning",
+  C: "bg-warning/15 text-warning",
+  D: "bg-bg-muted text-muted",
 };
 
 export const GRADE_DOT_COLORS: Record<Grade, string> = {
-  S: "bg-emerald-500",
-  A: "bg-sky-500",
-  B: "bg-amber-500",
-  C: "bg-orange-500",
-  D: "bg-gray-400",
+  S: "bg-success",
+  A: "bg-cta",
+  B: "bg-warning",
+  C: "bg-warning",
+  D: "bg-muted",
 };
 
 export const STATUS_LABELS: Record<LeadStatus, string> = {
@@ -30,16 +30,16 @@ export const STATUS_LABELS: Record<LeadStatus, string> = {
 };
 
 export const STATUS_COLORS: Record<LeadStatus, string> = {
-  new: "bg-blue-50 text-blue-700",
-  qualified: "bg-indigo-50 text-indigo-700",
-  called: "bg-cyan-50 text-cyan-700",
-  connected: "bg-teal-50 text-teal-700",
-  diagnosis_scheduled: "bg-emerald-50 text-emerald-700",
-  proposal_sent: "bg-violet-50 text-violet-700",
-  won: "bg-green-50 text-green-700",
-  lost: "bg-gray-50 text-gray-600",
-  invalid: "bg-gray-100 text-gray-500 line-through",
-  blocked: "bg-red-50 text-red-700",
+  new: "bg-cta/10 text-cta",
+  qualified: "bg-primary/10 text-primary",
+  called: "bg-secondary/10 text-secondary",
+  connected: "bg-success/10 text-success",
+  diagnosis_scheduled: "bg-success/15 text-success",
+  proposal_sent: "bg-primary/15 text-primary",
+  won: "bg-success/15 text-success",
+  lost: "bg-bg-muted text-muted",
+  invalid: "bg-bg-muted text-muted line-through",
+  blocked: "bg-danger/10 text-danger",
 };
 
 export const SIGNAL_TYPE_LABELS: Record<string, string> = {

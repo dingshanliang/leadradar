@@ -35,7 +35,7 @@ export function ScoreBreakdown({ score }: ScoreBreakdownProps) {
                   {value}/{dim.max}
                 </span>
               </div>
-              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-2 bg-bg-muted rounded-full overflow-hidden">
                 <div
                   className="h-full bg-cta rounded-full transition-all duration-500"
                   style={{ width: `${pct}%` }}

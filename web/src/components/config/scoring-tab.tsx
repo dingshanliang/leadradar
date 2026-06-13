@@ -34,7 +34,7 @@ export function ScoringTab() {
           <div className="flex gap-2">
             <button
               onClick={cancelEditing}
-              className="px-3 py-1.5 text-sm rounded-lg border border-border hover:bg-gray-50 transition-colors"
+              className="px-3 py-1.5 text-sm rounded-lg border border-border hover:bg-bg-muted transition-colors"
               disabled={isSaving}
             >
               取消
@@ -45,7 +45,7 @@ export function ScoringTab() {
               className={`px-3 py-1.5 text-sm rounded-lg text-white transition-colors ${
                 isValid && !isSaving
                   ? "bg-primary hover:bg-primary/90"
-                  : "bg-gray-300 cursor-not-allowed"
+                  : "bg-border cursor-not-allowed"
               }`}
             >
               {isSaving ? "保存中..." : "保存"}
@@ -54,7 +54,7 @@ export function ScoringTab() {
         ) : (
           <button
             onClick={startEditing}
-            className="px-3 py-1.5 text-sm rounded-lg border border-border hover:bg-gray-50 transition-colors"
+            className="px-3 py-1.5 text-sm rounded-lg border border-border hover:bg-bg-muted transition-colors"
           >
             编辑
           </button>
@@ -63,9 +63,9 @@ export function ScoringTab() {
 
       {/* Validation errors */}
       {validationErrors.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 space-y-1">
+        <div className="bg-danger/10 border border-danger/20 rounded-xl p-4 space-y-1">
           {validationErrors.map((err) => (
-            <p key={err} className="text-sm text-red-600">
+            <p key={err} className="text-sm text-danger">
               {err}
             </p>
           ))}
@@ -74,8 +74,8 @@ export function ScoringTab() {
 
       {/* Save error */}
       {saveError && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-          <p className="text-sm text-red-600">{saveError}</p>
+        <div className="bg-danger/10 border border-danger/20 rounded-xl p-4">
+          <p className="text-sm text-danger">{saveError}</p>
         </div>
       )}
 
@@ -117,7 +117,7 @@ export function ScoringTab() {
                         />
                       ) : (
                         <div className="flex-1">
-                          <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-3 bg-bg-muted rounded-full overflow-hidden">
                             <div
                               className="h-full bg-cta rounded-full"
                               style={{ width: `${val}%` }}
@@ -170,14 +170,14 @@ export function ScoringTab() {
                       <span
                         className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${
                           g === "S"
-                            ? "bg-emerald-100 text-emerald-700"
+                            ? "bg-success/15 text-success"
                             : g === "A"
-                            ? "bg-blue-100 text-blue-700"
+                            ? "bg-cta/15 text-cta"
                             : g === "B"
-                            ? "bg-amber-100 text-amber-700"
+                            ? "bg-warning/15 text-warning"
                             : g === "C"
-                            ? "bg-orange-100 text-orange-700"
-                            : "bg-gray-100 text-gray-500"
+                            ? "bg-warning/15 text-warning"
+                            : "bg-bg-muted text-muted"
                         }`}
                       >
                         {g}
@@ -191,7 +191,7 @@ export function ScoringTab() {
                         value={value}
                         onChange={(e) => updateGrade(g, e.target.value)}
                         disabled={g === "D"}
-                        className="w-full px-2 py-1 text-sm text-center border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary disabled:bg-gray-50 disabled:text-gray-400"
+                        className="w-full px-2 py-1 text-sm text-center border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary disabled:bg-bg-muted disabled:text-muted"
                       />
                     ) : (
                       <p className="text-center font-mono text-sm font-bold text-primary">

@@ -33,7 +33,7 @@ export function LeadFiltersBar({ filters, onChange }: LeadFiltersBarProps) {
               className={`px-2 py-0.5 rounded text-xs font-medium cursor-pointer transition-colors duration-150 ${
                 filters.grade === g
                   ? GRADE_COLORS[g]
-                  : "bg-gray-100 text-muted hover:bg-gray-200"
+                  : "bg-bg-muted text-muted hover:bg-border"
               }`}
             >
               {g}
@@ -50,7 +50,7 @@ export function LeadFiltersBar({ filters, onChange }: LeadFiltersBarProps) {
         <select
           value={filters.status ?? ""}
           onChange={(e) => update({ status: e.target.value || undefined })}
-          className="text-xs border border-border rounded-lg px-2 py-1 bg-white text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-cta"
+          className="text-xs border border-border rounded-lg px-2 py-1 bg-bg-elevated text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-cta"
         >
           <option value="">全部</option>
           {STATUSES.map((s) => (
@@ -67,7 +67,7 @@ export function LeadFiltersBar({ filters, onChange }: LeadFiltersBarProps) {
         <select
           value={filters.signal_type ?? ""}
           onChange={(e) => update({ signal_type: e.target.value || undefined })}
-          className="text-xs border border-border rounded-lg px-2 py-1 bg-white text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-cta"
+          className="text-xs border border-border rounded-lg px-2 py-1 bg-bg-elevated text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-cta"
         >
           <option value="">全部</option>
           {signalTypes.map(([k, v]) => (

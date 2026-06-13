@@ -35,7 +35,7 @@ export function KeywordsTab() {
             {group.keywords.map((kw) => (
               <span
                 key={kw}
-                className="px-2 py-0.5 bg-gray-100 text-xs text-foreground rounded"
+                className="px-2 py-0.5 bg-bg-muted text-xs text-foreground rounded"
               >
                 {kw}
               </span>

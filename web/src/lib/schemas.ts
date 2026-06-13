@@ -150,6 +150,14 @@ export function validateLeadStatus(status: string) {
 }
 
 /**
+ * Quick helper to validate a grade string.
+ * Returns a SafeParseReturnType so callers can branch on `.success`.
+ */
+export function validateGrade(grade: string) {
+  return z.enum(GRADE_KEYS).safeParse(grade);
+}
+
+/**
  * Quick helper to validate a follow-up create payload.
  * Returns a SafeParseReturnType so callers can branch on `.success`.
  */

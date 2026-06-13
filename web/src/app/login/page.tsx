@@ -41,7 +41,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
+    <div className="flex min-h-screen items-center justify-center bg-bg">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <h1 className="font-heading text-3xl font-bold text-primary">LeadRadar</h1>
@@ -57,7 +57,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full text-sm border border-border rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-1 focus:ring-cta"
+                className="w-full text-sm border border-border rounded-lg px-3 py-2 bg-bg-elevated focus:outline-none focus:ring-1 focus:ring-cta"
                 placeholder="your@email.com"
               />
             </div>
@@ -68,13 +68,13 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full text-sm border border-border rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-1 focus:ring-cta"
+                className="w-full text-sm border border-border rounded-lg px-3 py-2 bg-bg-elevated focus:outline-none focus:ring-1 focus:ring-cta"
                 placeholder="••••••••"
               />
             </div>
 
             {error && (
-              <p className="text-xs text-red-600">{error}</p>
+              <p className="text-xs text-danger">{error}</p>
             )}
 
             <Button type="submit" disabled={loading} className="w-full">

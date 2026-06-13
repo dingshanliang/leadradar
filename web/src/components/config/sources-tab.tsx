@@ -47,12 +47,12 @@ export function SourcesTab() {
             </div>
             <span
               className={`inline-flex items-center gap-1.5 text-xs ${
-                src.enabled ? "text-emerald-700" : "text-gray-400"
+                src.enabled ? "text-success" : "text-muted"
               }`}
             >
               <span
                 className={`w-1.5 h-1.5 rounded-full ${
-                  src.enabled ? "bg-emerald-500" : "bg-gray-300"
+                  src.enabled ? "bg-success" : "bg-border"
                 }`}
               />
               {src.enabled ? "启用" : "禁用"}

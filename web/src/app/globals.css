@@ -6,6 +6,8 @@
   --color-cta: #0369A1;
   --color-cta-hover: #0284C7;
   --color-bg: #F8FAFC;
+  --color-bg-elevated: #FFFFFF;
+  --color-bg-muted: #F1F5F9;
   --color-foreground: #020617;
   --color-border: #E2E8F0;
   --color-muted: #64748B;
@@ -20,12 +22,36 @@
   --grade-d: #6B7280;
 }
 
+html.dark {
+  --color-primary: #F8FAFC;
+  --color-secondary: #CBD5E1;
+  --color-cta: #38BDF8;
+  --color-cta-hover: #7DD3FC;
+  --color-bg: #0F172A;
+  --color-bg-elevated: #1E293B;
+  --color-bg-muted: #334155;
+  --color-foreground: #F8FAFC;
+  --color-border: #334155;
+  --color-muted: #94A3B8;
+  --color-success: #34D399;
+  --color-warning: #FBBF24;
+  --color-danger: #F87171;
+
+  --grade-s: #34D399;
+  --grade-a: #38BDF8;
+  --grade-b: #FBBF24;
+  --grade-c: #FB923C;
+  --grade-d: #94A3B8;
+}
+
 @theme inline {
   --color-primary: var(--color-primary);
   --color-secondary: var(--color-secondary);
   --color-cta: var(--color-cta);
   --color-cta-hover: var(--color-cta-hover);
   --color-bg: var(--color-bg);
+  --color-bg-elevated: var(--color-bg-elevated);
+  --color-bg-muted: var(--color-bg-muted);
   --color-foreground: var(--color-foreground);
   --color-border: var(--color-border);
   --color-muted: var(--color-muted);

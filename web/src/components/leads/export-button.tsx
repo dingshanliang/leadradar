@@ -27,7 +27,7 @@ export function ExportButton({ grade }: ExportButtonProps) {
       <select
         value={format}
         onChange={(e) => setFormat(e.target.value as "csv" | "xlsx")}
-        className="text-xs border border-border rounded-lg px-2 py-1.5 bg-white cursor-pointer focus:outline-none"
+        className="text-xs border border-border rounded-lg px-2 py-1.5 bg-bg-elevated cursor-pointer focus:outline-none"
       >
         <option value="csv">CSV</option>
         <option value="xlsx">Excel</option>
@@ -35,7 +35,7 @@ export function ExportButton({ grade }: ExportButtonProps) {
       <button
         onClick={() => handleExport(format)}
         disabled={loading}
-        className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-white border border-border text-foreground hover:bg-gray-50 cursor-pointer transition-colors duration-150 disabled:opacity-50"
+        className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-bg-elevated border border-border text-foreground hover:bg-bg-muted cursor-pointer transition-colors duration-150 disabled:opacity-50"
       >
         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />

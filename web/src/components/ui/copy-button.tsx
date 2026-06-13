@@ -22,8 +22,8 @@ export function CopyButton({ text, label = "复制", className }: CopyButtonProp
       onClick={handleCopy}
       className={`text-xs px-2 py-1 rounded transition-colors duration-150 cursor-pointer ${
         copied
-          ? "bg-emerald-50 text-emerald-700"
-          : "bg-gray-100 text-muted hover:bg-gray-200 hover:text-foreground"
+          ? "bg-success/10 text-success"
+          : "bg-bg-muted text-muted hover:bg-border hover:text-foreground"
       } ${className ?? ""}`}
     >
       {copied ? "已复制" : label}

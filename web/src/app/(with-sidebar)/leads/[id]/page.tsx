@@ -15,6 +15,7 @@ import { ErrorState } from "@/components/ui/error-state";
 import { getLeadDetail } from "@/lib/api-client";
 import { useMeta } from "@/hooks/use-meta";
 import { formatBudget } from "@/lib/utils";
+import { validateLeadStatus } from "@/lib/schemas";
 import type { LeadDetail } from "@/lib/types";
 
 export default function LeadDetailPage() {
@@ -59,6 +60,7 @@ export default function LeadDetailPage() {
   }
 
   const signal = lead.signal;
+  const statusResult = validateLeadStatus(lead.lead_status);
 
   return (
     <div className="px-8 py-6 max-w-6xl">
@@ -74,7 +76,7 @@ export default function LeadDetailPage() {
       </button>
 
       {/* Compliance warning */}
-      <ComplianceNote status={lead.lead_status} />
+      {statusResult.success && <ComplianceNote status={statusResult.data} />}
 
       {/* Basic info */}
       <div className="mt-4">

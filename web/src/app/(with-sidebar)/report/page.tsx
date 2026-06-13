@@ -57,7 +57,7 @@ export default function ReportPage() {
             <div className="space-y-2 text-sm">
               <p>本周新增 <span className="font-bold text-primary">{data.new_leads}</span> 条线索，完成 <span className="font-bold text-primary">{data.followed_up}</span> 次跟进。</p>
               <p>联系到决策人 <span className="font-bold text-primary">{data.contacted}</span> 个，预约诊断 <span className="font-bold text-primary">{data.scheduled}</span> 个。</p>
-              <p>成交 <span className="font-bold text-emerald-700">{data.won}</span> 个，流失 <span className="font-bold text-red-600">{data.lost}</span> 个，转化率 <span className="font-bold text-primary">{data.conversion_rate}</span>。</p>
+              <p>成交 <span className="font-bold text-success">{data.won}</span> 个，流失 <span className="font-bold text-danger">{data.lost}</span> 个，转化率 <span className="font-bold text-primary">{data.conversion_rate}</span>。</p>
             </div>
           </Card>
         </>

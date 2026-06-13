@@ -27,7 +27,7 @@ export default function ConfigPage() {
       <p className="text-sm text-muted mb-6">系统配置与参数管理</p>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 bg-white rounded-xl border border-border p-1">
+      <div className="flex gap-1 mb-6 bg-bg-elevated rounded-xl border border-border p-1">
         {TABS.map((tab) => (
           <button
             key={tab.key}
@@ -35,7 +35,7 @@ export default function ConfigPage() {
             className={`px-4 py-2 rounded-lg text-sm cursor-pointer transition-colors duration-150 ${
               activeTab === tab.key
                 ? "bg-primary text-white font-medium"
-                : "text-muted hover:text-foreground hover:bg-gray-50"
+                : "text-muted hover:text-foreground hover:bg-bg-muted"
             }`}
           >
             {tab.label}

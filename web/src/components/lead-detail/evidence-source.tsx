@@ -11,7 +11,7 @@ export function EvidenceSource({ signal }: EvidenceSourceProps) {
     <Card title="证据来源">
       <div className="space-y-3">
         {signal.evidence_text && (
-          <div className="flex items-start justify-between gap-3 p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-start justify-between gap-3 p-3 bg-bg-muted rounded-lg">
             <p className="text-sm text-foreground leading-relaxed">
               {signal.evidence_text}
             </p>

@@ -6,6 +6,7 @@ import { StatusDropdown } from "./status-dropdown";
 import { useMeta } from "@/hooks/use-meta";
 import { formatDate } from "@/lib/utils";
 import { updateLeadStatus } from "@/lib/api-client";
+import { validateGrade } from "@/lib/schemas";
 import type { LeadListItem, LeadStatus } from "@/lib/types";
 
 interface LeadTableProps {
@@ -37,10 +38,12 @@ export function LeadTable({ leads, onStatusChange }: LeadTableProps) {
           </tr>
         </thead>
         <tbody>
-          {leads.map((lead) => (
+          {leads.map((lead) => {
+            const gradeResult = validateGrade(lead.grade);
+            return (
             <tr
               key={lead.id}
-              className="border-b border-border/50 hover:bg-gray-50/50 transition-colors duration-100"
+              className="border-b border-border/50 hover:bg-bg-muted/50 transition-colors duration-100"
             >
               <td className="py-3.5 pr-4">
                 <span className="font-mono text-sm font-semibold text-primary">
@@ -48,7 +51,7 @@ export function LeadTable({ leads, onStatusChange }: LeadTableProps) {
                 </span>
               </td>
               <td className="py-3.5 pr-4">
-                <GradeBadge grade={lead.grade} />
+                {gradeResult.success && <GradeBadge grade={gradeResult.data} />}
               </td>
               <td className="py-3.5 pr-4">
                 <Link
@@ -88,7 +91,8 @@ export function LeadTable({ leads, onStatusChange }: LeadTableProps) {
                 </Link>
               </td>
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
     </div>

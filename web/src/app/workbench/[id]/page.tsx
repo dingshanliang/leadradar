@@ -13,6 +13,7 @@ import { CALL_RESULTS } from "@/lib/constants";
 import { useMeta } from "@/hooks/use-meta";
 import { FollowUpHistory } from "@/components/lead-detail/follow-up-history";
 import { formatBudget } from "@/lib/utils";
+import { validateLeadStatus } from "@/lib/schemas";
 import type { FollowUpOut, Grade, LeadDetail } from "@/lib/types";
 
 export default function WorkbenchPage() {
@@ -77,11 +78,12 @@ export default function WorkbenchPage() {
   const script = lead.call_script;
   const signal = lead.signal;
   const org = lead.organization;
+  const statusResult = validateLeadStatus(lead.lead_status);
 
   return (
     <div className="flex min-h-screen">
       {/* Left Panel: Customer Info */}
-      <div className="w-80 border-r border-border bg-white p-6 overflow-y-auto flex-shrink-0">
+      <div className="w-80 border-r border-border bg-bg-elevated p-6 overflow-y-auto flex-shrink-0">
         <button
           onClick={() => router.back()}
           className="flex items-center gap-1 text-xs text-muted hover:text-foreground mb-6 cursor-pointer"
@@ -98,7 +100,7 @@ export default function WorkbenchPage() {
               <h2 className="font-heading text-lg font-bold text-primary">{org.name}</h2>
               <GradeBadge grade={lead.score.grade as Grade} />
             </div>
-            <StatusBadge status={lead.lead_status} />
+            {statusResult.success && <StatusBadge status={statusResult.data} />}
           </div>
 
           <div className="space-y-2 text-sm">
@@ -120,7 +122,7 @@ export default function WorkbenchPage() {
 
           {/* Evidence */}
           {signal.evidence_text && (
-            <div className="p-3 bg-gray-50 rounded-lg">
+            <div className="p-3 bg-bg-muted rounded-lg">
               <div className="flex items-center justify-between mb-1">
                 <p className="text-xs font-medium text-secondary">证据</p>
                 <CopyButton text={signal.evidence_text} />
@@ -165,7 +167,7 @@ export default function WorkbenchPage() {
             </h3>
             <ol className="space-y-3">
               {script.questions.map((q, i) => (
-                <li key={i} className="flex items-start gap-3 p-3 bg-white rounded-lg border border-border">
+                <li key={i} className="flex items-start gap-3 p-3 bg-bg-elevated rounded-lg border border-border">
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-cta text-white text-xs flex items-center justify-center font-medium">
                     {i + 1}
                   </span>
@@ -180,7 +182,7 @@ export default function WorkbenchPage() {
             <h3 className="text-sm font-semibold text-secondary mb-3 uppercase tracking-wide">
               微信跟进
             </h3>
-            <div className="p-4 bg-white rounded-lg border border-border">
+            <div className="p-4 bg-bg-elevated rounded-lg border border-border">
               <p className="text-sm text-foreground">{script.wechat_follow_up}</p>
               <div className="mt-2">
                 <CopyButton text={script.wechat_follow_up} label="复制话术" />
@@ -191,7 +193,7 @@ export default function WorkbenchPage() {
       </div>
 
       {/* Right Panel: Follow-up Form */}
-      <div className="w-80 border-l border-border bg-white p-6 overflow-y-auto flex-shrink-0">
+      <div className="w-80 border-l border-border bg-bg-elevated p-6 overflow-y-auto flex-shrink-0">
         <h3 className="text-sm font-semibold text-secondary mb-4 uppercase tracking-wide">
           跟进记录
         </h3>
@@ -203,7 +205,7 @@ export default function WorkbenchPage() {
             <select
               value={channel}
               onChange={(e) => setChannel(e.target.value)}
-              className="w-full text-sm border border-border rounded-lg px-3 py-2 bg-white cursor-pointer focus:outline-none focus:ring-1 focus:ring-cta"
+              className="w-full text-sm border border-border rounded-lg px-3 py-2 bg-bg-elevated cursor-pointer focus:outline-none focus:ring-1 focus:ring-cta"
             >
               <option value="phone">电话</option>
               <option value="wechat">微信</option>
@@ -217,7 +219,7 @@ export default function WorkbenchPage() {
             <select
               value={result}
               onChange={(e) => setResult(e.target.value)}
-              className="w-full text-sm border border-border rounded-lg px-3 py-2 bg-white cursor-pointer focus:outline-none focus:ring-1 focus:ring-cta"
+              className="w-full text-sm border border-border rounded-lg px-3 py-2 bg-bg-elevated cursor-pointer focus:outline-none focus:ring-1 focus:ring-cta"
             >
               <option value="">请选择...</option>
               {CALL_RESULTS.map((r) => (
@@ -232,7 +234,7 @@ export default function WorkbenchPage() {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="w-full text-sm border border-border rounded-lg px-3 py-2 bg-white resize-none focus:outline-none focus:ring-1 focus:ring-cta"
+              className="w-full text-sm border border-border rounded-lg px-3 py-2 bg-bg-elevated resize-none focus:outline-none focus:ring-1 focus:ring-cta"
               placeholder="记录关键信息..."
             />
           </div>

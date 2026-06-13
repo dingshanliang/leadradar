@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/leads/status-badge";
 import { formatDate } from "@/lib/utils";
+import { validateLeadStatus } from "@/lib/schemas";
 import type { LeadDetail } from "@/lib/types";
 
 interface BasicInfoProps {
@@ -9,6 +10,7 @@ interface BasicInfoProps {
 
 export function BasicInfo({ lead }: BasicInfoProps) {
   const org = lead.organization;
+  const statusResult = validateLeadStatus(lead.lead_status);
   return (
     <Card>
       <div className="flex items-start justify-between">
@@ -21,7 +23,7 @@ export function BasicInfo({ lead }: BasicInfoProps) {
             {org.organization_type && <span>{org.organization_type}</span>}
           </div>
         </div>
-        <StatusBadge status={lead.lead_status} />
+        {statusResult.success && <StatusBadge status={statusResult.data} />}
       </div>
       <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-border">
         <div>

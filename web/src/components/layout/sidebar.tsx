@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const NAV_ITEMS = [
   {
@@ -48,7 +49,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-56 bg-white border-r border-border flex flex-col z-30">
+    <aside className="fixed left-0 top-0 bottom-0 w-56 bg-bg-elevated border-r border-border flex flex-col z-30">
       <div className="px-5 py-6 border-b border-border">
         <h1 className="font-heading text-lg font-bold text-primary tracking-tight">
           LeadRadar
@@ -70,7 +71,7 @@ export function Sidebar() {
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors duration-150",
                 isActive
                   ? "bg-primary/[0.06] text-primary font-medium"
-                  : "text-muted hover:text-foreground hover:bg-gray-50"
+                  : "text-muted hover:text-foreground hover:bg-bg-muted"
               )}
             >
               {item.icon}
@@ -80,7 +81,8 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="px-5 py-4 border-t border-border">
+      <div className="px-5 py-4 border-t border-border space-y-3">
+        <ThemeToggle />
         <p className="text-xs text-muted">v0.1.0 MVP</p>
       </div>
     </aside>

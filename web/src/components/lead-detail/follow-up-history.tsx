@@ -17,7 +17,7 @@ export function FollowUpHistory({ followUps, compact }: FollowUpHistoryProps) {
     return (
       <div className="space-y-2">
         {followUps.map((fu) => (
-          <div key={fu.id} className="p-2 bg-gray-50 rounded-lg text-xs">
+          <div key={fu.id} className="p-2 bg-bg-muted rounded-lg text-xs">
             <div className="flex items-center justify-between">
               <span className="font-medium text-foreground">{fu.result}</span>
               <span className="text-muted">{formatDate(fu.created_at)}</span>

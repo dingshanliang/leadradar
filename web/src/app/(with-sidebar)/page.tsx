@@ -34,12 +34,12 @@ export default function LeadPoolPage() {
       </div>
 
       {/* Filters */}
-      <div className="mb-4 p-4 bg-white rounded-xl border border-border">
+      <div className="mb-4 p-4 bg-bg-elevated rounded-xl border border-border">
         <LeadFiltersBar filters={filters} onChange={setFilters} />
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-border p-4">
+      <div className="bg-bg-elevated rounded-xl border border-border p-4">
         {error ? (
           <ErrorState onRetry={() => mutate()} />
         ) : isLoading ? (
@@ -72,7 +72,7 @@ export default function LeadPoolPage() {
                     }))
                   }
                   disabled={(filters.offset ?? 0) === 0}
-                  className="text-xs px-3 py-1.5 rounded-lg border border-border hover:bg-gray-50 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-150"
+                  className="text-xs px-3 py-1.5 rounded-lg border border-border hover:bg-bg-muted cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-150"
                 >
                   上一页
                 </button>
@@ -84,7 +84,7 @@ export default function LeadPoolPage() {
                     }))
                   }
                   disabled={leads.length < (filters.limit ?? 50)}
-                  className="text-xs px-3 py-1.5 rounded-lg border border-border hover:bg-gray-50 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-150"
+                  className="text-xs px-3 py-1.5 rounded-lg border border-border hover:bg-bg-muted cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-150"
                 >
                   下一页
                 </button>
