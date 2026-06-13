@@ -1055,7 +1055,7 @@ export async function getManualTask(taskId: string): Promise<ManualTaskOut> {
 
 Run:
 ```bash
-cd web && npm run typecheck
+cd web && npx tsc --noEmit
 ```
 
 Expected: 0 errors
@@ -1106,7 +1106,7 @@ export function useManualTask(taskId: string | null) {
 
 Run:
 ```bash
-cd web && npm run typecheck
+cd web && npx tsc --noEmit
 ```
 
 Expected: 0 errors
@@ -1230,7 +1230,7 @@ export function TaskForm({ sources, onCreated }: TaskFormProps) {
 
 Run:
 ```bash
-cd web && npm run typecheck
+cd web && npx tsc --noEmit
 ```
 
 Expected: 0 errors
@@ -1314,7 +1314,7 @@ export function TaskList({ tasks, selectedTaskId, onSelect }: TaskListProps) {
 
 Run:
 ```bash
-cd web && npm run typecheck
+cd web && npx tsc --noEmit
 ```
 
 Expected: 0 errors
@@ -1451,7 +1451,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
 
 Run:
 ```bash
-cd web && npm run typecheck
+cd web && npx tsc --noEmit
 ```
 
 Expected: 0 errors
@@ -1574,7 +1574,7 @@ export function useSources() {
 
 Run:
 ```bash
-cd web && npm run typecheck
+cd web && npx tsc --noEmit
 ```
 
 Expected: 0 errors
@@ -1635,7 +1635,7 @@ import Link from "next/link";
 
 Run:
 ```bash
-cd web && npm run typecheck
+cd web && npx tsc --noEmit
 ```
 
 Expected: 0 errors
@@ -1741,7 +1741,7 @@ Expected: no errors
 
 Run:
 ```bash
-cd web && npm run lint && npm run typecheck && npm run test
+cd web && npm run lint && npx tsc --noEmit && npm run test
 ```
 
 Expected: all pass
