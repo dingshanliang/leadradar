@@ -17,6 +17,7 @@ from leadradar.api.schemas import (
     EnumItem,
     FollowUpCreate,
     FollowUpOut,
+    FollowUpSuggestionOut,
     KeywordGroup,
     LeadDetail,
     LeadListItem,
@@ -45,6 +46,10 @@ from leadradar.services.config_service import (
 )
 from leadradar.services.lead_export_service import LeadExportService
 from leadradar.services.lead_query_service import LeadQueryService
+from leadradar.services.follow_up_config import (
+    get_follow_up_suggestion as _get_follow_up_suggestion,
+    validate_reason,
+)
 from leadradar.services.lead_stats_service import LeadStatsService
 
 router = APIRouter(prefix="/api/v1")
@@ -268,16 +273,40 @@ def create_follow_up(
     body: FollowUpCreate,
     session: Session = Depends(get_session),
 ):
+    from datetime import datetime, timezone
+
     lead = session.get(Lead, lead_id)
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found")
+
+    next_action_at = body.next_action_at
+    if next_action_at is not None:
+        if next_action_at.tzinfo is None:
+            next_action_at = next_action_at.replace(tzinfo=timezone.utc)
+        if next_action_at <= datetime.now(timezone.utc):
+            raise HTTPException(
+                status_code=422, detail="下次跟进时间必须晚于当前时间"
+            )
+
+    result = body.result
+    if not result:
+        if not body.result_category:
+            raise HTTPException(status_code=422, detail="result_category 字段必填")
+        if not body.reason:
+            raise HTTPException(status_code=422, detail="reason 字段必填")
+        try:
+            validate_reason(body.result_category, body.reason)
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        result = f"{body.result_category}:{body.reason}"
 
     follow_up = FollowUp(
         lead_id=lead_id,
         contact_id=body.contact_id,
         channel=body.channel,
-        result=body.result,
+        result=result,
         notes=body.notes,
+        next_action_at=next_action_at,
     )
     session.add(follow_up)
     session.commit()
@@ -328,6 +357,20 @@ def list_due_follow_ups(session: Session = Depends(get_session)):
         )
         for fu, _, org in rows
     ]
+
+
+# ── Follow-up suggestion ──────────────────────────────────────────
+
+
+@router.get("/follow-up-suggestion", response_model=FollowUpSuggestionOut)
+def get_follow_up_suggestion(
+    result: str = Query(...),
+):
+    from datetime import datetime, timezone
+
+    now = datetime.now(timezone.utc)
+    suggested_at = _get_follow_up_suggestion(result, now=now)
+    return FollowUpSuggestionOut(result=result, next_action_at=suggested_at)
 
 
 # ── Crawl ─────────────────────────────────────────────────────────

@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 
 # ── User ──────────────────────────────────────────────────────────
@@ -137,8 +137,11 @@ class StatusUpdate(BaseModel):
 
 class FollowUpCreate(BaseModel):
     channel: str
-    result: str
+    result: str | None = None
+    result_category: str | None = None
+    reason: str | None = None
     notes: str | None = None
+    next_action_at: datetime | None = None
     contact_id: UUID | None = None
 
 
@@ -148,9 +151,25 @@ class FollowUpOut(BaseModel):
     contact_id: UUID | None = None
     channel: str
     result: str
+    result_category: str | None = None
+    reason: str | None = None
     notes: str | None = None
     next_action_at: datetime | None = None
     created_at: datetime
+
+    @model_validator(mode="after")
+    def _derive_category_and_reason(self) -> "FollowUpOut":
+        if ":" in self.result:
+            self.result_category, self.reason = self.result.split(":", 1)
+        else:
+            self.result_category = None
+            self.reason = None
+        return self
+
+
+class FollowUpSuggestionOut(BaseModel):
+    result: str
+    next_action_at: datetime | None = None
 
 
 # ── Stats ─────────────────────────────────────────────────────────
