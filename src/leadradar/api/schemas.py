@@ -172,6 +172,14 @@ class FollowUpSuggestionOut(BaseModel):
     next_action_at: datetime | None = None
 
 
+class DueFollowUp(BaseModel):
+    follow_up_id: UUID
+    lead_id: UUID
+    organization_name: str | None = None
+    next_action_at: datetime
+    result: str
+
+
 # ── Stats ─────────────────────────────────────────────────────────
 
 
@@ -245,7 +253,6 @@ class WeeklyReport(BaseModel):
     won: int
     lost: int
     conversion_rate: str
-
 
 
 # ── Manual Generation ─────────────────────────────────────────────

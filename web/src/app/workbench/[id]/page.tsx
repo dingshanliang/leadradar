@@ -1,60 +1,166 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useState, useCallback } from "react";
-import useSWR from "swr";
-import { getLeadDetail, createFollowUp, updateLeadStatus, listFollowUps } from "@/lib/api-client";
+import { useCallback, useMemo, useRef, useState } from "react";
+import useSWR, { mutate as globalMutate } from "swr";
+import {
+  createFollowUp,
+  getLeadDetail,
+  getMeta,
+  listFollowUps,
+  updateLeadStatus,
+} from "@/lib/api-client";
+import { DUE_FOLLOW_UP_COUNT_KEY } from "@/hooks/use-due-follow-up-count";
 import { Button } from "@/components/ui/button";
 import { CopyButton } from "@/components/ui/copy-button";
 import { GradeBadge } from "@/components/leads/grade-badge";
 import { StatusBadge } from "@/components/leads/status-badge";
 import { ErrorState } from "@/components/ui/error-state";
-import { CALL_RESULTS } from "@/lib/constants";
-import { useMeta } from "@/hooks/use-meta";
+import {
+  CALL_RESULT_CATEGORIES,
+  FOLLOW_UP_SUGGESTIONS,
+  SIGNAL_TYPE_LABELS,
+} from "@/lib/constants";
 import { FollowUpHistory } from "@/components/lead-detail/follow-up-history";
-import { formatBudget } from "@/lib/utils";
+import {
+  formatBudget,
+  formatDateTimeLocal,
+  parseSuggestionDuration,
+} from "@/lib/utils";
 import { validateLeadStatus } from "@/lib/schemas";
 import type { FollowUpOut, Grade, LeadDetail } from "@/lib/types";
+
+interface CallResultsMeta {
+  call_results?: Record<string, { reasons: string[] }>;
+  follow_up_suggestions?: Record<string, string>;
+}
 
 export default function WorkbenchPage() {
   const params = useParams();
   const router = useRouter();
   const leadId = params.id as string;
 
-  const { data: lead, error: leadError, isLoading, mutate: mutateLead } = useSWR<LeadDetail>(
-    `lead-${leadId}`,
-    () => getLeadDetail(leadId)
+  const { data: lead, error: leadError, isLoading, mutate: mutateLead } =
+    useSWR<LeadDetail>(`lead-${leadId}`, () => getLeadDetail(leadId));
+  const {
+    data: followUps,
+    error: followUpsError,
+    mutate: mutateFollowUps,
+  } = useSWR<FollowUpOut[]>(`followups-${leadId}`, () => listFollowUps(leadId));
+  const { data: meta } = useSWR<CallResultsMeta>("meta", getMeta);
+
+  const callResults = useMemo(
+    () => meta?.call_results ?? CALL_RESULT_CATEGORIES,
+    [meta]
   );
-  const { data: followUps, error: followUpsError, mutate: mutateFollowUps } = useSWR<FollowUpOut[]>(
-    `followups-${leadId}`,
-    () => listFollowUps(leadId)
+  const followUpSuggestions = useMemo(
+    () => meta?.follow_up_suggestions ?? FOLLOW_UP_SUGGESTIONS,
+    [meta]
   );
 
-  const { signalTypeLabels } = useMeta();
   const [channel, setChannel] = useState("phone");
-  const [result, setResult] = useState("");
+  const [category, setCategory] = useState("");
+  const [reason, setReason] = useState("");
+  const [nextActionAt, setNextActionAt] = useState("");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
+  const submittingRef = useRef(false);
+
+  const categories = useMemo(() => Object.keys(callResults), [callResults]);
+  const reasons = useMemo(
+    () => (category ? callResults[category]?.reasons ?? [] : []),
+    [category, callResults]
+  );
+
+  const applySuggestion = useCallback(
+    (cat: string) => {
+      const rule = followUpSuggestions[cat];
+      if (!rule) return;
+      const ms = parseSuggestionDuration(rule);
+      if (ms == null) return;
+      setNextActionAt(formatDateTimeLocal(new Date(Date.now() + ms)));
+    },
+    [followUpSuggestions]
+  );
+
+  const handleCategoryChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const cat = e.target.value;
+      setCategory(cat);
+      setReason("");
+      setFormError("");
+      if (cat) applySuggestion(cat);
+    },
+    [applySuggestion]
+  );
+
+  const handleReasonChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const value = e.target.value;
+      setReason(value);
+      if (value) setFormError("");
+    },
+    []
+  );
 
   const handleSubmit = useCallback(async () => {
-    if (!result) return;
+    console.log("[handleSubmit]", { category, reason, leadId, ref: submittingRef.current });
+    if (submittingRef.current) return;
+    if (!category) return;
+    if (!reason) {
+      setFormError("请选择具体原因");
+      return;
+    }
+
+    submittingRef.current = true;
     setSubmitting(true);
+    setFormError("");
+
     try {
-      const selected = CALL_RESULTS.find((r) => r.value === result);
-      await createFollowUp(leadId, { channel, result, notes: notes || undefined });
-      if (selected) {
-        await updateLeadStatus(leadId, selected.status);
+      const mappedStatus =
+        CALL_RESULT_CATEGORIES[category as keyof typeof CALL_RESULT_CATEGORIES]
+          ?.status;
+
+      console.log("[before createFollowUp]", { category, reason });
+      await createFollowUp(leadId, {
+        channel,
+        result_category: category,
+        reason,
+        notes: notes || undefined,
+        next_action_at: nextActionAt || undefined,
+      });
+      console.log("[after createFollowUp]", { category, reason });
+
+      if (mappedStatus) {
+        await updateLeadStatus(leadId, mappedStatus);
       }
-      setResult("");
+
+      setChannel("phone");
+      setCategory("");
+      setReason("");
       setNotes("");
+      setNextActionAt("");
       mutateFollowUps();
       mutateLead();
+      globalMutate(DUE_FOLLOW_UP_COUNT_KEY);
     } catch (err) {
-      console.error("Failed to submit follow-up:", err);
+      const message = err instanceof Error ? err.message : "提交失败，请重试";
+      setFormError(message);
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
-  }, [leadId, channel, result, notes, mutateFollowUps, mutateLead]);
+  }, [
+    leadId,
+    channel,
+    category,
+    reason,
+    notes,
+    nextActionAt,
+    mutateFollowUps,
+    mutateLead,
+  ]);
 
   if (leadError) {
     return (
@@ -88,8 +194,18 @@ export default function WorkbenchPage() {
           onClick={() => router.back()}
           className="flex items-center gap-1 text-xs text-muted hover:text-foreground mb-6 cursor-pointer"
         >
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 19.5L8.25 12l7.5-7.5" />
+          <svg
+            className="w-3.5 h-3.5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M15.75 19.5L8.25 12l7.5-7.5"
+            />
           </svg>
           返回
         </button>
@@ -97,7 +213,9 @@ export default function WorkbenchPage() {
         <div className="space-y-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <h2 className="font-heading text-lg font-bold text-primary">{org.name}</h2>
+              <h2 className="font-heading text-lg font-bold text-primary">
+                {org.name}
+              </h2>
               <GradeBadge grade={lead.score.grade as Grade} />
             </div>
             {statusResult.success && <StatusBadge status={statusResult.data} />}
@@ -106,17 +224,23 @@ export default function WorkbenchPage() {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted">信号类型</span>
-              <span className="font-medium">{signalTypeLabels[signal.signal_type] ?? signal.signal_type}</span>
+              <span className="font-medium">
+                {SIGNAL_TYPE_LABELS[signal.signal_type] ?? signal.signal_type}
+              </span>
             </div>
             {signal.budget_amount != null && (
               <div className="flex justify-between">
                 <span className="text-muted">预算金额</span>
-                <span className="font-mono font-bold text-primary">{formatBudget(signal.budget_amount)}</span>
+                <span className="font-mono font-bold text-primary">
+                  {formatBudget(signal.budget_amount)}
+                </span>
               </div>
             )}
             <div className="flex justify-between">
               <span className="text-muted">推荐产品包</span>
-              <span className="font-medium text-xs">{lead.recommended_package ?? "-"}</span>
+              <span className="font-medium text-xs">
+                {lead.recommended_package ?? "-"}
+              </span>
             </div>
           </div>
 
@@ -127,7 +251,9 @@ export default function WorkbenchPage() {
                 <p className="text-xs font-medium text-secondary">证据</p>
                 <CopyButton text={signal.evidence_text} />
               </div>
-              <p className="text-xs text-foreground leading-relaxed">{signal.evidence_text}</p>
+              <p className="text-xs text-foreground leading-relaxed">
+                {signal.evidence_text}
+              </p>
             </div>
           )}
 
@@ -153,7 +279,9 @@ export default function WorkbenchPage() {
               开场白
             </h3>
             <div className="p-5 bg-primary/[0.03] rounded-xl border border-primary/10">
-              <p className="text-base text-foreground leading-relaxed">{script.opening}</p>
+              <p className="text-base text-foreground leading-relaxed">
+                {script.opening}
+              </p>
               <div className="mt-3">
                 <CopyButton text={script.opening} label="复制开场白" />
               </div>
@@ -167,11 +295,16 @@ export default function WorkbenchPage() {
             </h3>
             <ol className="space-y-3">
               {script.questions.map((q, i) => (
-                <li key={i} className="flex items-start gap-3 p-3 bg-bg-elevated rounded-lg border border-border">
+                <li
+                  key={i}
+                  className="flex items-start gap-3 p-3 bg-bg-elevated rounded-lg border border-border"
+                >
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-cta text-white text-xs flex items-center justify-center font-medium">
                     {i + 1}
                   </span>
-                  <span className="text-sm text-foreground leading-relaxed">{q}</span>
+                  <span className="text-sm text-foreground leading-relaxed">
+                    {q}
+                  </span>
                 </li>
               ))}
             </ol>
@@ -201,8 +334,11 @@ export default function WorkbenchPage() {
         {/* Form */}
         <div className="space-y-3">
           <div>
-            <label className="text-xs text-muted block mb-1">渠道</label>
+            <label htmlFor="channel" className="text-xs text-muted block mb-1">
+              渠道
+            </label>
             <select
+              id="channel"
               value={channel}
               onChange={(e) => setChannel(e.target.value)}
               className="w-full text-sm border border-border rounded-lg px-3 py-2 bg-bg-elevated cursor-pointer focus:outline-none focus:ring-1 focus:ring-cta"
@@ -215,22 +351,72 @@ export default function WorkbenchPage() {
           </div>
 
           <div>
-            <label className="text-xs text-muted block mb-1">通话结果</label>
+            <label
+              htmlFor="result-category"
+              className="text-xs text-muted block mb-1"
+            >
+              结果类别
+            </label>
             <select
-              value={result}
-              onChange={(e) => setResult(e.target.value)}
+              id="result-category"
+              value={category}
+              onChange={handleCategoryChange}
               className="w-full text-sm border border-border rounded-lg px-3 py-2 bg-bg-elevated cursor-pointer focus:outline-none focus:ring-1 focus:ring-cta"
             >
               <option value="">请选择...</option>
-              {CALL_RESULTS.map((r) => (
-                <option key={r.value} value={r.value}>{r.value}</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
               ))}
             </select>
           </div>
 
           <div>
-            <label className="text-xs text-muted block mb-1">备注</label>
+            <label htmlFor="reason" className="text-xs text-muted block mb-1">
+              具体原因
+            </label>
+            <select
+              id="reason"
+              value={reason}
+              onChange={handleReasonChange}
+              disabled={!category}
+              className="w-full text-sm border border-border rounded-lg px-3 py-2 bg-bg-elevated cursor-pointer focus:outline-none focus:ring-1 focus:ring-cta disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <option value="">
+                {category ? "请选择..." : "请先选择结果类别"}
+              </option>
+              {reasons.map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label
+              htmlFor="next-action-at"
+              className="text-xs text-muted block mb-1"
+            >
+              下次跟进时间
+            </label>
+            <input
+              id="next-action-at"
+              type="datetime-local"
+              step={3600}
+              value={nextActionAt}
+              onChange={(e) => setNextActionAt(e.target.value)}
+              className="w-full text-sm border border-border rounded-lg px-3 py-2 bg-bg-elevated focus:outline-none focus:ring-1 focus:ring-cta"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="notes" className="text-xs text-muted block mb-1">
+              备注
+            </label>
             <textarea
+              id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
@@ -239,9 +425,15 @@ export default function WorkbenchPage() {
             />
           </div>
 
+          {formError && (
+            <p className="text-xs text-danger" role="alert">
+              {formError}
+            </p>
+          )}
+
           <Button
             onClick={handleSubmit}
-            disabled={!result || submitting}
+            disabled={!category || submitting}
             className="w-full"
           >
             {submitting ? "提交中..." : "提交跟进"}
@@ -252,7 +444,10 @@ export default function WorkbenchPage() {
         {followUpsError ? (
           <div className="mt-6 pt-4 border-t border-border">
             <p className="text-xs text-muted mb-3">历史跟进</p>
-            <ErrorState message="跟进记录加载失败" onRetry={() => mutateFollowUps()} />
+            <ErrorState
+              message="跟进记录加载失败"
+              onRetry={() => mutateFollowUps()}
+            />
           </div>
         ) : followUps && followUps.length > 0 ? (
           <div className="mt-6 pt-4 border-t border-border">

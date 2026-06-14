@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { useDueFollowUpCount } from "@/hooks/use-due-follow-up-count";
 
 const NAV_ITEMS = [
   {
@@ -12,6 +14,16 @@ const NAV_ITEMS = [
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
+      </svg>
+    ),
+  },
+  {
+    href: "/due-follow-ups" as const,
+    label: "到期跟进",
+    showBadge: true as const,
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
   },
@@ -54,8 +66,14 @@ const NAV_ITEMS = [
   },
 ];
 
+function formatBadgeCount(count: number): string {
+  if (count > 99) return "99+";
+  return String(count);
+}
+
 export function Sidebar() {
   const pathname = usePathname();
+  const { count } = useDueFollowUpCount();
 
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-56 bg-bg-elevated border-r border-border flex flex-col z-30">
@@ -72,10 +90,11 @@ export function Sidebar() {
             item.href === "/"
               ? pathname === "/"
               : pathname.startsWith(item.href);
+          const showBadge = item.showBadge && count > 0;
           return (
             <Link
               key={item.href}
-              href={item.href}
+              href={item.href as never}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors duration-150",
                 isActive
@@ -84,7 +103,17 @@ export function Sidebar() {
               )}
             >
               {item.icon}
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {showBadge && (
+                <span
+                  className="ml-auto"
+                  title={`${count} 条到期跟进`}
+                >
+                  <Badge className="bg-danger text-white">
+                    {formatBadgeCount(count)}
+                  </Badge>
+                </span>
+              )}
             </Link>
           );
         })}

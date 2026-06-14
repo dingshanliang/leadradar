@@ -16,6 +16,7 @@ export type CallScript = components["schemas"]["CallScript"];
 export type LeadDetail = components["schemas"]["LeadDetail"];
 export type FollowUpCreate = components["schemas"]["FollowUpCreate"];
 export type FollowUpOut = components["schemas"]["FollowUpOut"];
+export type DueFollowUp = components["schemas"]["DueFollowUp"];
 export type Stats = components["schemas"]["StatsOut"];
 export type Meta = components["schemas"]["MetaOut"];
 export type EnumItem = components["schemas"]["EnumItem"];

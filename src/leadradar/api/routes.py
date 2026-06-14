@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import datetime
 from pathlib import Path
 from typing import Literal
 from uuid import UUID
@@ -14,6 +13,7 @@ from leadradar.adapters.export_adapters import CsvExportAdapter, XlsxExportAdapt
 from leadradar.api.schemas import (
     ConfigOut,
     DocumentOut,
+    DueFollowUp,
     EnumItem,
     FollowUpCreate,
     FollowUpOut,
@@ -29,13 +29,13 @@ from leadradar.api.schemas import (
     StatusUpdate,
     WeeklyReport,
 )
+from leadradar.auth import User, get_current_user
 from leadradar.db import get_session
 from leadradar.models import (
     SIGNAL_TYPE_LABELS,
     FollowUp,
     Lead,
     LeadStatus,
-    Organization,
     RawDocument,
     Source,
 )
@@ -284,9 +284,7 @@ def create_follow_up(
         if next_action_at.tzinfo is None:
             next_action_at = next_action_at.replace(tzinfo=timezone.utc)
         if next_action_at <= datetime.now(timezone.utc):
-            raise HTTPException(
-                status_code=422, detail="下次跟进时间必须晚于当前时间"
-            )
+            raise HTTPException(status_code=422, detail="下次跟进时间必须晚于当前时间")
 
     result = body.result
     if not result:
@@ -325,38 +323,28 @@ def list_follow_ups(lead_id: UUID, session: Session = Depends(get_session)):
 # ── Due follow-ups ───────────────────────────────────────────────
 
 
-class DueFollowUp(BaseModel):
-    follow_up_id: UUID
-    lead_id: UUID
-    organization_name: str | None = None
-    next_action_at: datetime
-    result: str
-
-
 @router.get("/follow-ups/due", response_model=list[DueFollowUp])
-def list_due_follow_ups(session: Session = Depends(get_session)):
-    from datetime import datetime, timezone
+def list_due_follow_ups(
+    _user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    from leadradar.services.due_follow_up_service import DueFollowUpService
 
-    now = datetime.now(timezone.utc)
-    rows = session.exec(
-        select(FollowUp, Lead, Organization)
-        .join(Lead, Lead.id == FollowUp.lead_id)
-        .join(Organization, Organization.id == Lead.organization_id)
-        .where(FollowUp.next_action_at is not None, FollowUp.next_action_at <= now)
-        .order_by(FollowUp.next_action_at.asc())
-        .limit(50)
-    ).all()
+    return DueFollowUpService().list_due_follow_ups(session)
 
-    return [
-        DueFollowUp(
-            follow_up_id=fu.id,
-            lead_id=fu.lead_id,
-            organization_name=org.name,
-            next_action_at=fu.next_action_at,
-            result=fu.result,
-        )
-        for fu, _, org in rows
-    ]
+
+class DueFollowUpCount(BaseModel):
+    count: int
+
+
+@router.get("/follow-ups/due/count", response_model=DueFollowUpCount)
+def get_due_follow_up_count(
+    _user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    from leadradar.services.due_follow_up_service import DueFollowUpService
+
+    return DueFollowUpCount(count=DueFollowUpService().count_due_follow_ups(session))
 
 
 # ── Follow-up suggestion ──────────────────────────────────────────

@@ -1,7 +1,7 @@
 import type {
   AppConfig,
   Document,
-  FollowUpCreate,
+  DueFollowUp,
   FollowUpOut,
   LeadDetail,
   LeadFilters,
@@ -16,6 +16,7 @@ import {
   followUpCreateSchema,
   leadStatusUpdateSchema,
   scoringRulesUpdateSchema,
+  type FollowUpCreateInput,
 } from "./schemas";
 import { ApiError, fetchJson } from "./fetch-utils";
 
@@ -158,7 +159,7 @@ export async function getWeeklyReport(): Promise<Record<string, unknown>> {
 
 export async function createFollowUp(
   leadId: string,
-  data: FollowUpCreate
+  data: FollowUpCreateInput
 ): Promise<FollowUpOut> {
   const parsed = followUpCreateSchema.safeParse(data);
   if (!parsed.success) {
@@ -174,6 +175,14 @@ export async function createFollowUp(
 
 export async function listFollowUps(leadId: string): Promise<FollowUpOut[]> {
   return apiFetch(`/api/v1/leads/${leadId}/follow-ups`);
+}
+
+export async function getDueFollowUpCount(): Promise<{ count: number }> {
+  return apiFetch("/api/v1/follow-ups/due/count");
+}
+
+export async function getDueFollowUps(): Promise<DueFollowUp[]> {
+  return apiFetch("/api/v1/follow-ups/due");
 }
 
 // ── Manual Tasks ────────────────────────────────────────────────
