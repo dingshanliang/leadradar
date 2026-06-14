@@ -1,6 +1,10 @@
 /** Shared fetch primitives used by both client-side and server-side API layers. */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const rawApiBase = process.env.NEXT_PUBLIC_API_URL;
+const API_BASE =
+  typeof rawApiBase === "string" && rawApiBase.startsWith("http")
+    ? rawApiBase
+    : "http://localhost:8000";
 
 export class ApiError extends Error {
   constructor(
