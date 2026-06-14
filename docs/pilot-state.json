@@ -1,0 +1,97 @@
+{
+  "schema_version": "1.0",
+  "prd": "docs/prd/sales-follow-up-closure-deepening.md",
+  "started": "2026-06-14",
+  "clarifications": [
+    {"question": "下次跟进时间的默认建议规则是什么？", "decision": "使用 data/follow_up_suggestions.yml 配置，启动加载"},
+    {"question": "到期跟进列表是否按负责人筛选？", "decision": "MVP 不过滤负责人，全部登录用户可见"},
+    {"question": "到期跟进默认展示未来多少天？", "decision": "未来 7 天 + 已逾期"},
+    {"question": "通话原因字典需要哪些具体项？", "decision": "保留现有 CALL_RESULTS 文本作为初始原因集，按类别分组"},
+    {"question": "结果类别与原因字典是否走配置 API 在线编辑？", "decision": "默认先走 data/ 下 YAML 配置，后端启动加载"},
+    {"question": "黑名单是否记录联系人手机号哈希？", "decision": "MVP 仅记录 organization_id"},
+    {"question": "谁能解除黑名单？", "decision": "MVP 任何登录用户可解除"},
+    {"question": "被屏蔽机构的新线索是否自动屏蔽？", "decision": "是，自动标记为 blocked 且不提醒"},
+    {"question": "下次跟进时间是否跳过节假日？", "decision": "不跳过，按自然时间"},
+    {"question": "屏蔽操作默认屏蔽单条线索还是整个机构？", "decision": "默认屏蔽单条线索，提供同时屏蔽机构复选框"},
+    {"question": "解除屏蔽是否影响该机构后续新线索？", "decision": "不影响，解除仅针对当前黑名单记录"}
+  ],
+  "consecutive_failures": 0,
+  "last_failure_reason": "",
+  "parallel_agents": [],
+  "context_hints": {
+    "tech_stack": "FastAPI + SQLModel + Pydantic v2 + Next.js 16 + TypeScript 5 + Tailwind CSS 4",
+    "backend_test_runner": "pytest -q",
+    "frontend_test_runner": "cd web && npm run test",
+    "api_dir": "src/leadradar/api/",
+    "service_dir": "src/leadradar/services/",
+    "model_dir": "src/leadradar/",
+    "test_dir": "tests/",
+    "web_dir": "web/",
+    "web_app_dir": "web/src/app/",
+    "web_components_dir": "web/src/components/",
+    "web_hooks_dir": "web/src/hooks/",
+    "web_lib_dir": "web/src/lib/"
+  },
+  "modules": [
+    {
+      "name": "follow-up-schema-extension",
+      "display_name": "跟进记录 Schema 扩展",
+      "status": "done",
+      "ac_file": "docs/acceptance-criteria/follow-up-schema-extension.md",
+      "total_acs": 13,
+      "implemented": 13,
+      "pass": 13,
+      "fail": 0,
+      "priority": "P1",
+      "notes": "无依赖，优先实现"
+    },
+    {
+      "name": "workbench-follow-up-form",
+      "display_name": "工作台跟进表单增强",
+      "status": "done",
+      "ac_file": "docs/acceptance-criteria/workbench-follow-up-form.md",
+      "total_acs": 11,
+      "implemented": 11,
+      "pass": 11,
+      "fail": 0,
+      "priority": "P1",
+      "notes": "依赖 follow-up-schema-extension"
+    },
+    {
+      "name": "blacklist",
+      "display_name": "黑名单屏蔽",
+      "status": "done",
+      "ac_file": "docs/acceptance-criteria/blacklist.md",
+      "total_acs": 14,
+      "implemented": 14,
+      "pass": 14,
+      "fail": 0,
+      "priority": "P1",
+      "notes": "依赖 follow-up-schema-extension 和 workbench-follow-up-form"
+    },
+    {
+      "name": "due-follow-ups",
+      "display_name": "到期跟进提醒",
+      "status": "done",
+      "ac_file": "docs/acceptance-criteria/due-follow-ups.md",
+      "total_acs": 11,
+      "implemented": 11,
+      "pass": 11,
+      "fail": 0,
+      "priority": "P1",
+      "notes": "依赖 follow-up-schema-extension"
+    },
+    {
+      "name": "follow-up-history-enhancement",
+      "display_name": "跟进历史展示增强",
+      "status": "done",
+      "ac_file": "docs/acceptance-criteria/follow-up-history-enhancement.md",
+      "total_acs": 10,
+      "implemented": 10,
+      "pass": 10,
+      "fail": 0,
+      "priority": "P2",
+      "notes": "依赖 follow-up-schema-extension 和 workbench-follow-up-form"
+    }
+  ]
+}
