@@ -31,7 +31,7 @@ describe("ManualTasksPage", () => {
   it("renders form and empty task list", () => {
     render(<ManualTasksPage />);
     expect(screen.getByText("手动生成线索")).toBeInTheDocument();
-    expect(screen.getByText("生成线索")).toBeInTheDocument();
+    expect(screen.getByText("请选择至少一个渠道")).toBeInTheDocument();
     expect(screen.getByText("测试源 A")).toBeInTheDocument();
   });
 });

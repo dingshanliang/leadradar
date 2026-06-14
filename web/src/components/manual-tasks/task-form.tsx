@@ -43,7 +43,14 @@ export function TaskForm({ sources, onCreated }: TaskFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4 p-4 bg-bg-elevated rounded-xl border border-border">
       <fieldset>
-        <legend className="text-sm font-medium mb-2">选择信息渠道</legend>
+        <legend className="text-sm font-medium mb-2">
+          选择信息渠道
+          {selectedSources.length > 0 && (
+            <span className="ml-2 text-xs font-normal text-primary">
+              已选 {selectedSources.length} 个
+            </span>
+          )}
+        </legend>
         <div className="flex flex-wrap gap-2">
           {availableSources.map((source) => (
             <label
@@ -95,9 +102,13 @@ export function TaskForm({ sources, onCreated }: TaskFormProps) {
       <button
         type="submit"
         disabled={selectedSources.length === 0 || isSubmitting}
-        className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium disabled:bg-primary/50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
+        className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
       >
-        {isSubmitting ? "提交中..." : "生成线索"}
+        {isSubmitting
+          ? "提交中..."
+          : selectedSources.length === 0
+            ? "请选择至少一个渠道"
+            : `生成线索（已选 ${selectedSources.length} 个）`}
       </button>
     </form>
   );
