@@ -672,6 +672,10 @@ export interface components {
              * @default by_group
              */
             keyword_mode: string;
+            /** Keyword Groups */
+            keyword_groups?: string[] | null;
+            /** Keywords */
+            keywords?: string[] | null;
         };
         /** ManualTaskOut */
         ManualTaskOut: {

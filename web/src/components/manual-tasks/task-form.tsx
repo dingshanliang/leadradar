@@ -2,23 +2,40 @@
 
 import { useState } from "react";
 import { createManualTask } from "@/lib/api-client";
-import type { Source } from "@/lib/types";
+import type { AppConfig, Source } from "@/lib/types";
 
 interface TaskFormProps {
   sources: Source[];
+  config: AppConfig | undefined;
   onCreated: (taskId: string) => void;
 }
 
-export function TaskForm({ sources, onCreated }: TaskFormProps) {
+export function TaskForm({ sources, config, onCreated }: TaskFormProps) {
   const availableSources = sources.filter((s) => s.source_key);
+  const keywordGroups = config?.keyword_groups ?? [];
+
   const [selectedSources, setSelectedSources] = useState<string[]>([]);
   const [keywordMode, setKeywordMode] = useState<"by_group" | "by_keyword">("by_group");
+  const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
+  const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const toggleSource = (key: string) => {
     setSelectedSources((prev) =>
       prev.includes(key) ? prev.filter((s) => s !== key) : [...prev, key]
+    );
+  };
+
+  const toggleGroup = (name: string) => {
+    setSelectedGroups((prev) =>
+      prev.includes(name) ? prev.filter((g) => g !== name) : [...prev, name]
+    );
+  };
+
+  const toggleKeyword = (kw: string) => {
+    setSelectedKeywords((prev) =>
+      prev.includes(kw) ? prev.filter((k) => k !== kw) : [...prev, kw]
     );
   };
 
@@ -31,6 +48,8 @@ export function TaskForm({ sources, onCreated }: TaskFormProps) {
       const task = await createManualTask({
         source_keys: selectedSources,
         keyword_mode: keywordMode,
+        keyword_groups: keywordMode === "by_group" ? selectedGroups : undefined,
+        keywords: keywordMode === "by_keyword" ? selectedKeywords : undefined,
       });
       onCreated(task.id);
     } catch (err) {
@@ -97,6 +116,73 @@ export function TaskForm({ sources, onCreated }: TaskFormProps) {
         </div>
       </fieldset>
 
+      {keywordMode === "by_group" ? (
+        <fieldset>
+          <legend className="text-sm font-medium mb-2">
+            选择关键词组
+            {selectedGroups.length > 0 && (
+              <span className="ml-2 text-xs font-normal text-primary">
+                已选 {selectedGroups.length} 个
+              </span>
+            )}
+          </legend>
+          <div className="flex flex-wrap gap-2">
+            {keywordGroups.map((group) => (
+              <label
+                key={group.name}
+                title={group.description}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm transition-colors focus-within:ring-2 focus-within:ring-primary ${
+                  selectedGroups.includes(group.name)
+                    ? "border-primary bg-primary/[0.06] text-primary"
+                    : "border-border hover:bg-bg-muted"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={selectedGroups.includes(group.name)}
+                  onChange={() => toggleGroup(group.name)}
+                />
+                {group.description || group.name}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      ) : (
+        <fieldset>
+          <legend className="text-sm font-medium mb-2">
+            选择关键词
+            {selectedKeywords.length > 0 && (
+              <span className="ml-2 text-xs font-normal text-primary">
+                已选 {selectedKeywords.length} 个
+              </span>
+            )}
+          </legend>
+          <div className="max-h-48 overflow-y-auto flex flex-wrap gap-2 p-1">
+            {keywordGroups.flatMap((group) =>
+              group.keywords.map((kw) => (
+                <label
+                  key={`${group.name}-${kw}`}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm transition-colors focus-within:ring-2 focus-within:ring-primary ${
+                    selectedKeywords.includes(kw)
+                      ? "border-primary bg-primary/[0.06] text-primary"
+                      : "border-border hover:bg-bg-muted"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    className="sr-only"
+                    checked={selectedKeywords.includes(kw)}
+                    onChange={() => toggleKeyword(kw)}
+                  />
+                  {kw}
+                </label>
+              ))
+            )}
+          </div>
+        </fieldset>
+      )}
+
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       <button
@@ -108,7 +194,7 @@ export function TaskForm({ sources, onCreated }: TaskFormProps) {
           ? "提交中..."
           : selectedSources.length === 0
             ? "请选择至少一个渠道"
-            : `生成线索（已选 ${selectedSources.length} 个）`}
+            : `生成线索（已选 ${selectedSources.length} 个渠道）`}
       </button>
     </form>
   );

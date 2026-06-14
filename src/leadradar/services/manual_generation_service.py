@@ -32,7 +32,14 @@ class ManualGenerationService:
     def __init__(self, session: Session):
         self._session = session
 
-    def create_task(self, *, source_keys: list[str], keyword_mode: str) -> ManualTask:
+    def create_task(
+        self,
+        *,
+        source_keys: list[str],
+        keyword_mode: str,
+        keyword_groups: list[str] | None = None,
+        keywords: list[str] | None = None,
+    ) -> ManualTask:
         """Create a ManualTask and its subtasks, but do not run them."""
         from leadradar.crawlers.registry import list_sources
 
@@ -56,7 +63,11 @@ class ManualGenerationService:
         if missing:
             raise ValueError(f"Source keys missing or disabled: {sorted(missing)}")
 
-        queries = expand_queries(keyword_mode)
+        queries = expand_queries(
+            keyword_mode,
+            keyword_groups=keyword_groups,
+            keywords=keywords,
+        )
         if not queries:
             raise ValueError("No keywords configured")
 

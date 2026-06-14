@@ -24,6 +24,22 @@ vi.mock("@/hooks/use-sources", () => ({
     ],
     error: null,
     isLoading: false,
+    mutate: vi.fn(),
+  }),
+}));
+
+vi.mock("@/hooks/use-config", () => ({
+  useConfig: () => ({
+    config: {
+      keyword_groups: [
+        { name: "test_group", description: "测试组", keywords: ["测试关键词"] },
+      ],
+      scoring_dimensions: [],
+      product_packages: [],
+    },
+    error: null,
+    isLoading: false,
+    mutate: vi.fn(),
   }),
 }));
 

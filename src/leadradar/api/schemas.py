@@ -235,6 +235,8 @@ class WeeklyReport(BaseModel):
 class ManualTaskCreate(BaseModel):
     source_keys: list[str]
     keyword_mode: str = "by_group"
+    keyword_groups: list[str] | None = None
+    keywords: list[str] | None = None
 
 
 class ManualSubtaskOut(BaseModel):

@@ -27,6 +27,8 @@ async def create_manual_task(
         task = service.create_task(
             source_keys=body.source_keys,
             keyword_mode=body.keyword_mode,
+            keyword_groups=body.keyword_groups,
+            keywords=body.keywords,
         )
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc

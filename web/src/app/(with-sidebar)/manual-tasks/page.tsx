@@ -7,6 +7,7 @@ import { TaskDetail } from "@/components/manual-tasks/task-detail";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useConfig } from "@/hooks/use-config";
 import { useManualTask, useManualTasks } from "@/hooks/use-manual-tasks";
 import { useSources } from "@/hooks/use-sources";
 
@@ -15,6 +16,7 @@ export default function ManualTasksPage() {
   const { tasks, error: tasksError, isLoading: tasksLoading, mutate } = useManualTasks();
   const { task: selectedTask, error: detailError } = useManualTask(selectedTaskId);
   const { sources, error: sourcesError, isLoading: sourcesLoading, mutate: mutateSources } = useSources();
+  const { config, isLoading: configLoading } = useConfig();
 
   const handleCreated = (taskId: string) => {
     setSelectedTaskId(taskId);
@@ -30,14 +32,14 @@ export default function ManualTasksPage() {
         </p>
       </div>
 
-      {sourcesLoading ? (
+      {sourcesLoading || configLoading ? (
         <Skeleton className="h-40 w-full" />
       ) : sourcesError ? (
         <ErrorState onRetry={() => mutateSources()} />
       ) : sources.length === 0 ? (
         <EmptyState title="无可用渠道" description="请先在配置页添加数据源" />
       ) : (
-        <TaskForm sources={sources} onCreated={handleCreated} />
+        <TaskForm sources={sources} config={config} onCreated={handleCreated} />
       )}
 
       <div className="grid grid-cols-12 gap-6 mt-6">
