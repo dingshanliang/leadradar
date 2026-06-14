@@ -8,9 +8,17 @@ from sqlmodel import SQLModel, Session, create_engine, select
 from leadradar.config import get_settings
 
 
+def _resolve_database_url(url: str) -> str:
+    if url.startswith("sqlite:///./"):
+        db_path = Path(__file__).resolve().parents[2] / url[12:]
+        return f"sqlite:///{db_path.resolve()}"
+    return url
+
+
 def get_engine():
     settings = get_settings()
-    return create_engine(settings.database_url, echo=settings.app_env == "development")
+    url = _resolve_database_url(settings.database_url)
+    return create_engine(url, echo=settings.app_env == "development")
 
 
 def _data_dir() -> Path:
