@@ -29,6 +29,14 @@ export type ManualTaskCreate = components["schemas"]["ManualTaskCreate"];
 export type ManualTaskOut = components["schemas"]["ManualTaskOut"];
 export type ManualSubtaskOut = components["schemas"]["ManualSubtaskOut"];
 
+// Hand-written until api-types.ts is regenerated from the backend OpenAPI spec.
+export interface Blocklist {
+  id: string;
+  organization_id: string | null;
+  reason: string;
+  created_at: string;
+}
+
 // ── filter / query types (not in OpenAPI schemas) ────────────────
 
 export interface LeadFilters {

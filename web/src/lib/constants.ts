@@ -8,6 +8,7 @@ export const CALL_RESULT_CATEGORIES: Record<
   未接通: { reasons: ["无人接听", "关机", "占线"], status: "called" },
   接通有意向: { reasons: ["需方案", "约演示", "询价"], status: "connected" },
   接通无意向: { reasons: ["暂无需求", "已有供应商"], status: "lost" },
+  无效: { reasons: ["不需要服务"], status: "blocked" },
 };
 
 /** 默认下次跟进时间建议（当后端 meta 未返回时兜底） */
@@ -15,6 +16,7 @@ export const FOLLOW_UP_SUGGESTIONS: Record<string, string> = {
   未接通: "2h",
   接通有意向: "1d",
   接通无意向: "7d",
+  无效: "7d",
 };
 
 export const GRADE_COLORS: Record<Grade, string> = {

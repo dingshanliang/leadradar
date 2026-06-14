@@ -13,3 +13,6 @@ categories:
     reasons:
       - 暂无需求
       - 已有供应商
+  无效:
+    reasons:
+      - 不需要服务

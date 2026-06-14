@@ -60,10 +60,12 @@ const metaWithCallResults = {
   call_results: {
     未接通: { reasons: ["无人接听", "关机", "占线"] },
     接通有意向: { reasons: ["需方案", "约演示", "询价"] },
+    无效: { reasons: ["不需要服务"] },
   },
   follow_up_suggestions: {
     未接通: "2h",
     接通有意向: "1d",
+    无效: "7d",
   },
 };
 
@@ -376,5 +378,37 @@ describe("WorkbenchPage - workbench-follow-up-form", () => {
       expect(utils.getByRole("button", { name: "提交跟进" })).toBeInTheDocument()
     );
     expect(createFollowUp).toHaveBeenCalledTimes(1);
+  });
+
+  // ── AC-01-B2: Block organization checkbox defaults to false ───────
+  it("test_ac01_b2_block_organization_checkbox_defaults_unchecked", async () => {
+    vi.mocked(updateLeadStatus).mockResolvedValue(undefined);
+
+    const utils = render(<WorkbenchPage />);
+    fireEvent.change(utils.getByLabelText("结果类别"), {
+      target: { value: "无效" },
+    });
+    fireEvent.change(utils.getByLabelText("具体原因"), {
+      target: { value: "不需要服务" },
+    });
+
+    const checkbox = utils.getByLabelText(
+      "同时屏蔽整个机构"
+    ) as HTMLInputElement;
+    expect(checkbox).toBeInTheDocument();
+    expect(checkbox.checked).toBe(false);
+
+    fireEvent.click(utils.getByRole("button", { name: "提交跟进" }));
+
+    await waitFor(() => expect(createFollowUp).toHaveBeenCalledTimes(1));
+    expect(createFollowUp).toHaveBeenCalledWith(
+      "lead-1",
+      expect.objectContaining({
+        result_category: "无效",
+        reason: "不需要服务",
+        block_organization: false,
+      })
+    );
+    expect(updateLeadStatus).toHaveBeenCalledWith("lead-1", "blocked");
   });
 });

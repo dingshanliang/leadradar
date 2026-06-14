@@ -12,11 +12,16 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
-import { getLeadDetail } from "@/lib/api-client";
+import {
+  createFollowUp,
+  getLeadDetail,
+  listBlocklist,
+  unblockOrganization,
+} from "@/lib/api-client";
 import { useMeta } from "@/hooks/use-meta";
 import { formatBudget } from "@/lib/utils";
 import { validateLeadStatus } from "@/lib/schemas";
-import type { LeadDetail } from "@/lib/types";
+import type { Blocklist, LeadDetail } from "@/lib/types";
 
 export default function LeadDetailPage() {
   const params = useParams();
@@ -28,6 +33,30 @@ export default function LeadDetailPage() {
     `lead-${leadId}`,
     () => getLeadDetail(leadId)
   );
+  const { data: blocklist } = useSWR<Blocklist[]>("blocklist", () =>
+    listBlocklist()
+  );
+
+  const blockRecord = lead
+    ? blocklist?.find((b) => b.organization_id === lead.organization.id) ?? null
+    : null;
+
+  const handleBlock = async () => {
+    if (!lead) return;
+    await createFollowUp(leadId, {
+      channel: "phone",
+      result_category: "无效",
+      reason: "不需要服务",
+      block_organization: true,
+    });
+    await mutate();
+  };
+
+  const handleUnblock = async () => {
+    if (!blockRecord) return;
+    await unblockOrganization(blockRecord.id);
+    await mutate();
+  };
 
   if (error) {
     return (
@@ -124,6 +153,23 @@ export default function LeadDetailPage() {
           >
             进入工作台
           </Button>
+          {lead.lead_status === "blocked" ? (
+            <Button
+              variant="primary"
+              className="mt-4 ml-2"
+              onClick={handleUnblock}
+            >
+              解除屏蔽
+            </Button>
+          ) : (
+            <Button
+              variant="danger"
+              className="mt-4 ml-2"
+              onClick={handleBlock}
+            >
+              屏蔽
+            </Button>
+          )}
         </Card>
       </div>
 

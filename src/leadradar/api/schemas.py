@@ -143,6 +143,14 @@ class FollowUpCreate(BaseModel):
     notes: str | None = None
     next_action_at: datetime | None = None
     contact_id: UUID | None = None
+    block_organization: bool | None = True
+
+
+class BlocklistOut(BaseModel):
+    id: UUID
+    organization_id: UUID | None = None
+    reason: str
+    created_at: datetime
 
 
 class FollowUpOut(BaseModel):

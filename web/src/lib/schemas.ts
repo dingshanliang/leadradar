@@ -86,6 +86,7 @@ export const followUpCreateSchema = z
     notes: z.string().nullable().optional(),
     next_action_at: z.string().nullable().optional(),
     contact_id: z.string().nullable().optional(),
+    block_organization: z.boolean().optional(),
   })
   .refine(
     (data) => {

@@ -1,5 +1,6 @@
 import type {
   AppConfig,
+  Blocklist,
   Document,
   DueFollowUp,
   FollowUpOut,
@@ -175,6 +176,16 @@ export async function createFollowUp(
 
 export async function listFollowUps(leadId: string): Promise<FollowUpOut[]> {
   return apiFetch(`/api/v1/leads/${leadId}/follow-ups`);
+}
+
+export async function listBlocklist(): Promise<Blocklist[]> {
+  return apiFetch("/api/v1/blocklist");
+}
+
+export async function unblockOrganization(blockId: string): Promise<void> {
+  return apiFetch(`/api/v1/blocklist/${blockId}`, {
+    method: "DELETE",
+  });
 }
 
 export async function getDueFollowUpCount(): Promise<{ count: number }> {

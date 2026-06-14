@@ -8,7 +8,7 @@ from uuid import UUID
 
 from sqlmodel import Session, select
 
-from leadradar.models import Lead, LeadScore, Organization, Signal
+from leadradar.models import Lead, LeadScore, LeadStatus, Organization, Signal
 
 
 @dataclass
@@ -63,6 +63,8 @@ class LeadRepository:
             query = query.where(LeadScore.grade == grade.upper())
         if status:
             query = query.where(Lead.lead_status == status)
+        else:
+            query = query.where(Lead.lead_status != LeadStatus.BLOCKED)
         if signal_type:
             query = query.where(Signal.signal_type == signal_type)
 

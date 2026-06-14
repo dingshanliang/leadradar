@@ -11,6 +11,7 @@ from sqlmodel import Session, select
 
 from leadradar.adapters.export_adapters import CsvExportAdapter, XlsxExportAdapter
 from leadradar.api.schemas import (
+    BlocklistOut,
     ConfigOut,
     DocumentOut,
     DueFollowUp,
@@ -50,6 +51,7 @@ from leadradar.services.follow_up_config import (
     get_follow_up_suggestion as _get_follow_up_suggestion,
     validate_reason,
 )
+from leadradar.services.blacklist_service import BlacklistService
 from leadradar.services.lead_stats_service import LeadStatsService
 
 router = APIRouter(prefix="/api/v1")
@@ -307,6 +309,15 @@ def create_follow_up(
         next_action_at=next_action_at,
     )
     session.add(follow_up)
+
+    if body.result_category == "无效":
+        BlacklistService().block_lead_and_organization(
+            session,
+            lead,
+            reason=body.reason or "",
+            block_organization=body.block_organization if body.block_organization is not None else True,
+        )
+
     session.commit()
     session.refresh(follow_up)
     return follow_up
@@ -427,6 +438,29 @@ async def run_pipeline(body: PipelineRequest, session: Session = Depends(get_ses
         "skipped_irrelevant": result.skipped_irrelevant,
         "errors": result.errors,
     }
+
+
+# ── Blocklist ─────────────────────────────────────────────────────
+
+
+@router.get("/blocklist", response_model=list[BlocklistOut])
+def list_blocklist(
+    _user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    return BlacklistService().list_blocklist(session)
+
+
+@router.delete("/blocklist/{block_id}", status_code=204)
+def delete_blocklist_record(
+    block_id: UUID,
+    _user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    success = BlacklistService().unblock_organization(session, block_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Blocklist record not found")
+    return Response(status_code=204)
 
 
 # ── Response helpers ──────────────────────────────────────────────

@@ -65,6 +65,7 @@ export default function WorkbenchPage() {
   const [reason, setReason] = useState("");
   const [nextActionAt, setNextActionAt] = useState("");
   const [notes, setNotes] = useState("");
+  const [blockOrganization, setBlockOrganization] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
   const submittingRef = useRef(false);
@@ -91,6 +92,7 @@ export default function WorkbenchPage() {
       const cat = e.target.value;
       setCategory(cat);
       setReason("");
+      setBlockOrganization(false);
       setFormError("");
       if (cat) applySuggestion(cat);
     },
@@ -129,6 +131,7 @@ export default function WorkbenchPage() {
         reason,
         notes: notes || undefined,
         next_action_at: nextActionAt || undefined,
+        block_organization: blockOrganization,
       });
 
       if (mappedStatus) {
@@ -140,6 +143,7 @@ export default function WorkbenchPage() {
       setReason("");
       setNotes("");
       setNextActionAt("");
+      setBlockOrganization(false);
       mutateFollowUps();
       mutateLead();
       globalMutate(DUE_FOLLOW_UP_COUNT_KEY);
@@ -157,6 +161,7 @@ export default function WorkbenchPage() {
     reason,
     notes,
     nextActionAt,
+    blockOrganization,
     mutateFollowUps,
     mutateLead,
   ]);
@@ -392,6 +397,24 @@ export default function WorkbenchPage() {
               ))}
             </select>
           </div>
+
+          {category === "无效" && (
+            <div className="flex items-center gap-2">
+              <input
+                id="block-organization"
+                type="checkbox"
+                checked={blockOrganization}
+                onChange={(e) => setBlockOrganization(e.target.checked)}
+                className="w-4 h-4 rounded border-border text-cta focus:ring-cta cursor-pointer"
+              />
+              <label
+                htmlFor="block-organization"
+                className="text-xs text-muted cursor-pointer"
+              >
+                同时屏蔽整个机构
+              </label>
+            </div>
+          )}
 
           <div>
             <label

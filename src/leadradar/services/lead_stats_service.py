@@ -8,7 +8,7 @@ from typing import Callable
 from sqlmodel import Session, select
 
 from leadradar.api.schemas import DistributionItem, StatsOut, WeeklyReport
-from leadradar.models import FollowUp, Lead
+from leadradar.models import FollowUp, Lead, LeadStatus
 from leadradar.repositories.lead_repo import LeadRepository
 
 
@@ -26,15 +26,18 @@ class LeadStatsService:
         """Return high-level statistics and distributions."""
         rows = self._repo.list_with_relations(session, limit=10_000, offset=0)
 
-        total = len(rows)
-        sa_count = sum(1 for r in rows if r.score.grade in ("S", "A"))
+        active_rows = [
+            r for r in rows if r.lead.lead_status.value != LeadStatus.BLOCKED.value
+        ]
+        total = len(active_rows)
+        sa_count = sum(1 for r in active_rows if r.score.grade in ("S", "A"))
         pending = sum(
-            1 for r in rows if r.lead.lead_status.value in ("new", "qualified")
+            1 for r in active_rows if r.lead.lead_status.value in ("new", "qualified")
         )
         scheduled = sum(
-            1 for r in rows if r.lead.lead_status.value == "diagnosis_scheduled"
+            1 for r in active_rows if r.lead.lead_status.value == "diagnosis_scheduled"
         )
-        invalid = sum(1 for r in rows if r.lead.lead_status.value == "invalid")
+        invalid = sum(1 for r in active_rows if r.lead.lead_status.value == "invalid")
         invalid_rate = f"{(invalid / total * 100):.1f}" if total > 0 else "0"
 
         return StatsOut(
@@ -45,13 +48,13 @@ class LeadStatsService:
             invalid=invalid,
             invalid_rate=invalid_rate,
             signal_type_distribution=self._distribution(
-                rows, lambda r: r.signal.signal_type if r.signal else "unknown"
+                active_rows, lambda r: r.signal.signal_type if r.signal else "unknown"
             )[:8],
             package_distribution=self._distribution(
-                rows, lambda r: r.lead.recommended_package or "未分类"
+                active_rows, lambda r: r.lead.recommended_package or "未分类"
             ),
             province_distribution=self._distribution(
-                rows, lambda r: r.org.province or "未知"
+                active_rows, lambda r: r.org.province or "未知"
             )[:8],
         )
 
