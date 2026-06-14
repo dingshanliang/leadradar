@@ -14,7 +14,7 @@ export default function ManualTasksPage() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const { tasks, error: tasksError, isLoading: tasksLoading, mutate } = useManualTasks();
   const { task: selectedTask, error: detailError } = useManualTask(selectedTaskId);
-  const { sources, isLoading: sourcesLoading } = useSources();
+  const { sources, error: sourcesError, isLoading: sourcesLoading, mutate: mutateSources } = useSources();
 
   const handleCreated = (taskId: string) => {
     setSelectedTaskId(taskId);
@@ -32,6 +32,8 @@ export default function ManualTasksPage() {
 
       {sourcesLoading ? (
         <Skeleton className="h-40 w-full" />
+      ) : sourcesError ? (
+        <ErrorState onRetry={() => mutateSources()} />
       ) : sources.length === 0 ? (
         <EmptyState title="无可用渠道" description="请先在配置页添加数据源" />
       ) : (
