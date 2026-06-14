@@ -134,6 +134,7 @@ class ManualGenerationService:
             task = self._session.get(ManualTask, task_id)
             if task is None:
                 raise ValueError(f"ManualTask {task_id} not found")
+            self._session.expire_all()
             subtasks_after = self._session.exec(
                 select(ManualSubtask).where(ManualSubtask.manual_task_id == task_id)
             ).all()

@@ -83,14 +83,27 @@ export function TaskDetail({ task }: TaskDetailProps) {
           {task.subtasks.map((sub) => (
             <div
               key={sub.id}
-              className="flex items-center justify-between text-sm py-1.5 px-2 rounded bg-bg-muted"
+              className="text-sm py-2 px-2 rounded bg-bg-muted space-y-1"
             >
-              <span className="truncate flex-1 mr-2" title={sub.query}>
-                {sub.query}
-              </span>
-              <span className="text-xs text-muted whitespace-nowrap">
-                {subStatusLabel(sub.status)} · {sub.created_leads_count} 条
-              </span>
+              <div className="flex items-center justify-between">
+                <span className="truncate flex-1 mr-2" title={sub.query}>
+                  {sub.query}
+                </span>
+                <span className="text-xs text-muted whitespace-nowrap">
+                  {subStatusLabel(sub.status)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-muted">
+                <span>
+                  {sub.status === "completed" && sub.created_leads_count === 0 && !sub.error_message
+                    ? "未匹配到公告/线索"
+                    : sub.created_leads_count > 0
+                      ? `生成 ${sub.created_leads_count} 条线索`
+                      : sub.error_message
+                        ? `失败: ${sub.error_message}`
+                        : ""}
+                </span>
+              </div>
             </div>
           ))}
         </div>
