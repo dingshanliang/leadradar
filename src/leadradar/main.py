@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -7,10 +9,19 @@ from leadradar.api.auth_routes import router as auth_router
 from leadradar.api.manual_generation_routes import router as manual_generation_router
 from leadradar.api.routes import router
 from leadradar.config import get_settings
+from leadradar.db import create_db_and_tables
 from leadradar.services.lead_service import generate_call_opening, score_demo_lead
 
 settings = get_settings()
-app = FastAPI(title=settings.app_name, version="0.1.0")
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    create_db_and_tables()
+    yield
+
+
+app = FastAPI(title=settings.app_name, version="0.1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
