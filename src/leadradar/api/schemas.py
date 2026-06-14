@@ -23,6 +23,7 @@ class SourceOut(BaseModel):
     id: UUID
     name: str
     source_type: str
+    source_key: str | None = None
     base_url: str | None = None
     priority: str | None = None
     enabled: bool = True
@@ -225,3 +226,42 @@ class WeeklyReport(BaseModel):
     won: int
     lost: int
     conversion_rate: str
+
+
+
+# ── Manual Generation ─────────────────────────────────────────────
+
+
+class ManualTaskCreate(BaseModel):
+    source_keys: list[str]
+    keyword_mode: str = "by_group"
+
+
+class ManualSubtaskOut(BaseModel):
+    id: UUID
+    source_key: str
+    source_id: UUID
+    query: str
+    keyword_group: str
+    keyword: str | None = None
+    status: str
+    created_leads_count: int
+    skipped_duplicate_count: int
+    error_message: str | None = None
+    started_at: datetime | None = None
+    finished_at: datetime | None = None
+
+
+class ManualTaskOut(BaseModel):
+    id: UUID
+    keyword_mode: str
+    status: str
+    total_subtasks: int
+    completed_subtasks: int
+    created_leads_count: int
+    skipped_duplicate_count: int
+    error_message: str | None = None
+    created_at: datetime
+    started_at: datetime | None = None
+    finished_at: datetime | None = None
+    subtasks: list[ManualSubtaskOut] = []

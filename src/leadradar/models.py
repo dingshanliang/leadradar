@@ -36,6 +36,26 @@ class LeadStatus(str, Enum):
         }[self.value]
 
 
+class ManualTaskStatus(str, Enum):
+    PENDING = "pending"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    PARTIAL_FAILED = "partial_failed"
+
+
+class ManualSubtaskStatus(str, Enum):
+    PENDING = "pending"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
+class KeywordMode(str, Enum):
+    BY_GROUP = "by_group"
+    BY_KEYWORD = "by_keyword"
+
+
 SIGNAL_TYPE_LABELS: dict[str, str] = {
     "procurement_intent": "采购意向",
     "tender_notice": "招标公告",
@@ -56,6 +76,7 @@ class Source(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     name: str
     source_type: str
+    source_key: Optional[str] = None
     base_url: Optional[str] = None
     priority: Optional[str] = None
     crawl_mode: Optional[str] = None
@@ -209,3 +230,33 @@ class Blocklist(SQLModel, table=True):
     contact_value_hash: Optional[str] = None
     reason: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class ManualTask(SQLModel, table=True):
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    keyword_mode: KeywordMode = KeywordMode.BY_GROUP
+    status: ManualTaskStatus = ManualTaskStatus.PENDING
+    total_subtasks: int = 0
+    completed_subtasks: int = 0
+    created_leads_count: int = 0
+    skipped_duplicate_count: int = 0
+    error_message: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    started_at: Optional[datetime] = None
+    finished_at: Optional[datetime] = None
+
+
+class ManualSubtask(SQLModel, table=True):
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    manual_task_id: UUID = Field(foreign_key="manualtask.id")
+    source_key: str
+    source_id: UUID = Field(foreign_key="source.id")
+    query: str
+    keyword_group: str
+    keyword: Optional[str] = None
+    status: ManualSubtaskStatus = ManualSubtaskStatus.PENDING
+    created_leads_count: int = 0
+    skipped_duplicate_count: int = 0
+    error_message: Optional[str] = None
+    started_at: Optional[datetime] = None
+    finished_at: Optional[datetime] = None

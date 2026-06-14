@@ -25,6 +25,15 @@ const NAV_ITEMS = [
     ),
   },
   {
+    href: "/manual-tasks" as const,
+    label: "手动生成",
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+  },
+  {
     href: "/report" as const,
     label: "周报",
     icon: (

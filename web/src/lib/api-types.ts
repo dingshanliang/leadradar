@@ -312,6 +312,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/manual-tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Manual Tasks */
+        get: operations["list_manual_tasks_api_v1_manual_tasks_get"];
+        put?: never;
+        /** Create Manual Task */
+        post: operations["create_manual_task_api_v1_manual_tasks_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/manual-tasks/{task_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Manual Task */
+        get: operations["get_manual_task_api_v1_manual_tasks__task_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -595,6 +630,85 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** ManualSubtaskOut */
+        ManualSubtaskOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Source Key */
+            source_key: string;
+            /**
+             * Source Id
+             * Format: uuid
+             */
+            source_id: string;
+            /** Query */
+            query: string;
+            /** Keyword Group */
+            keyword_group: string;
+            /** Keyword */
+            keyword?: string | null;
+            /** Status */
+            status: string;
+            /** Created Leads Count */
+            created_leads_count: number;
+            /** Skipped Duplicate Count */
+            skipped_duplicate_count: number;
+            /** Error Message */
+            error_message?: string | null;
+            /** Started At */
+            started_at?: string | null;
+            /** Finished At */
+            finished_at?: string | null;
+        };
+        /** ManualTaskCreate */
+        ManualTaskCreate: {
+            /** Source Keys */
+            source_keys: string[];
+            /**
+             * Keyword Mode
+             * @default by_group
+             */
+            keyword_mode: string;
+        };
+        /** ManualTaskOut */
+        ManualTaskOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Keyword Mode */
+            keyword_mode: string;
+            /** Status */
+            status: string;
+            /** Total Subtasks */
+            total_subtasks: number;
+            /** Completed Subtasks */
+            completed_subtasks: number;
+            /** Created Leads Count */
+            created_leads_count: number;
+            /** Skipped Duplicate Count */
+            skipped_duplicate_count: number;
+            /** Error Message */
+            error_message?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Started At */
+            started_at?: string | null;
+            /** Finished At */
+            finished_at?: string | null;
+            /**
+             * Subtasks
+             * @default []
+             */
+            subtasks: components["schemas"]["ManualSubtaskOut"][];
+        };
         /** MetaOut */
         MetaOut: {
             /** Signal Types */
@@ -762,6 +876,8 @@ export interface components {
             name: string;
             /** Source Type */
             source_type: string;
+            /** Source Key */
+            source_key?: string | null;
             /** Base Url */
             base_url?: string | null;
             /** Priority */
@@ -1414,6 +1530,101 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_manual_tasks_api_v1_manual_tasks_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManualTaskOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_manual_task_api_v1_manual_tasks_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManualTaskCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManualTaskOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_manual_task_api_v1_manual_tasks__task_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManualTaskOut"];
                 };
             };
             /** @description Validation Error */

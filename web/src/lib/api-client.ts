@@ -6,6 +6,8 @@ import type {
   LeadDetail,
   LeadFilters,
   LeadListItem,
+  ManualTaskCreate,
+  ManualTaskOut,
   Meta,
   Source,
   Stats,
@@ -172,4 +174,23 @@ export async function createFollowUp(
 
 export async function listFollowUps(leadId: string): Promise<FollowUpOut[]> {
   return apiFetch(`/api/v1/leads/${leadId}/follow-ups`);
+}
+
+// ── Manual Tasks ────────────────────────────────────────────────
+
+export async function createManualTask(
+  payload: ManualTaskCreate
+): Promise<ManualTaskOut> {
+  return apiFetch("/api/v1/manual-tasks", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function listManualTasks(): Promise<ManualTaskOut[]> {
+  return apiFetch("/api/v1/manual-tasks");
+}
+
+export async function getManualTask(taskId: string): Promise<ManualTaskOut> {
+  return apiFetch(`/api/v1/manual-tasks/${taskId}`);
 }

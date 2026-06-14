@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
+from uuid import UUID
 
 from sqlmodel import Session, select
 
@@ -28,7 +29,7 @@ class CrawlerService:
         self._fetch = fetch
         self._parser = parser or HtmlDocumentParser()
 
-    async def crawl(self, query: str, source_id: str | None = None) -> CrawlTask:
+    async def crawl(self, query: str, source_id: UUID | str | None = None) -> CrawlTask:
         task = CrawlTask(
             query=query,
             source_id=source_id,
