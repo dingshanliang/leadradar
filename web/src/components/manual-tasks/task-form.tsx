@@ -95,7 +95,7 @@ export function TaskForm({ sources, onCreated }: TaskFormProps) {
       <button
         type="submit"
         disabled={selectedSources.length === 0 || isSubmitting}
-        className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
+        className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium disabled:bg-primary/50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
       >
         {isSubmitting ? "提交中..." : "生成线索"}
       </button>
