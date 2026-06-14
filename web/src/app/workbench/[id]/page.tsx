@@ -47,7 +47,9 @@ export default function WorkbenchPage() {
     error: followUpsError,
     mutate: mutateFollowUps,
   } = useSWR<FollowUpOut[]>(`followups-${leadId}`, () => listFollowUps(leadId));
-  const { data: meta } = useSWR<CallResultsMeta>("meta", getMeta);
+  const { data: meta } = useSWR<CallResultsMeta>("meta", async () =>
+    getMeta() as Promise<CallResultsMeta>
+  );
 
   const callResults = useMemo(
     () => meta?.call_results ?? CALL_RESULT_CATEGORIES,
@@ -105,7 +107,6 @@ export default function WorkbenchPage() {
   );
 
   const handleSubmit = useCallback(async () => {
-    console.log("[handleSubmit]", { category, reason, leadId, ref: submittingRef.current });
     if (submittingRef.current) return;
     if (!category) return;
     if (!reason) {
@@ -122,7 +123,6 @@ export default function WorkbenchPage() {
         CALL_RESULT_CATEGORIES[category as keyof typeof CALL_RESULT_CATEGORIES]
           ?.status;
 
-      console.log("[before createFollowUp]", { category, reason });
       await createFollowUp(leadId, {
         channel,
         result_category: category,
@@ -130,7 +130,6 @@ export default function WorkbenchPage() {
         notes: notes || undefined,
         next_action_at: nextActionAt || undefined,
       });
-      console.log("[after createFollowUp]", { category, reason });
 
       if (mappedStatus) {
         await updateLeadStatus(leadId, mappedStatus);

@@ -77,12 +77,26 @@ export type LeadStatusUpdate = z.infer<typeof leadStatusUpdateSchema>;
 
 // ── FollowUpCreate schema ──────────────────────────────────────────
 
-export const followUpCreateSchema = z.object({
-  channel: z.string().min(1),
-  result: z.string().min(1),
-  notes: z.string().nullable().optional(),
-  contact_id: z.string().nullable().optional(),
-});
+export const followUpCreateSchema = z
+  .object({
+    channel: z.string().min(1),
+    result: z.string().min(1).optional(),
+    result_category: z.string().min(1).optional(),
+    reason: z.string().min(1).optional(),
+    notes: z.string().nullable().optional(),
+    next_action_at: z.string().nullable().optional(),
+    contact_id: z.string().nullable().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.result) return true;
+      return Boolean(data.result_category && data.reason);
+    },
+    {
+      message: "必须提供 result 或 result_category 与 reason",
+      path: ["result"],
+    }
+  );
 
 export type FollowUpCreateInput = z.infer<typeof followUpCreateSchema>;
 
