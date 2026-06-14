@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Poppins, Open_Sans } from "next/font/google";
 import { SWRProvider } from "@/providers/swr-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
@@ -32,6 +33,11 @@ export default function RootLayout({
       className={`${poppins.variable} ${openSans.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        {process.env.NODE_ENV === "development" && (
+          <Script src="/react-grab.js" strategy="afterInteractive" />
+        )}
+      </head>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <ThemeProvider>
           <SWRProvider>{children}</SWRProvider>
